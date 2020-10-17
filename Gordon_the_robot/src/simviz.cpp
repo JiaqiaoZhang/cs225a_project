@@ -1,4 +1,4 @@
-// #include <GL/glew.h>
+#include <GL/glew.h>
 #include "Sai2Model.h"
 #include "Sai2Graphics.h"
 #include "Sai2Simulation.h"
@@ -15,7 +15,7 @@
 
 #include <signal.h>
 bool fSimulationRunning = false;
-void sighandler(int){fSimulationRunning = false;}
+void sighandler(int) { fSimulationRunning = false; }
 
 using namespace std;
 using namespace Eigen;
@@ -27,19 +27,19 @@ const string robot_file = "./resources/mmp_panda.urdf";
 const string robot_name = "mmp_panda";
 const string camera_name = "camera_fixed";
 const string spatula_file = "./resources/spatula.urdf";
-const string spatula_name = "spatula"; 
+const string spatula_name = "spatula";
 const string burger_file = "./resources/burger.urdf";
-const string burger_name = "burger"; 
+const string burger_name = "burger";
 const string tomato_file = "./resources/tomato.urdf";
-const string tomato_name = "tomato"; 
+const string tomato_name = "tomato";
 const string cheese_file = "./resources/cheese.urdf";
-const string cheese_name = "cheese"; 
+const string cheese_name = "cheese";
 const string lettuce_file = "./resources/lettuce.urdf";
 const string lettuce_name = "lettuce";
 const string top_bun_file = "./resources/top_bun.urdf";
 const string top_bun_name = "top_bun";
 const string bottom_bun_file = "./resources/bottom_bun.urdf";
-const string bottom_bun_name = "bottom_bun"; 
+const string bottom_bun_name = "bottom_bun";
 
 // redis keys:
 // - write:
@@ -65,28 +65,28 @@ const std::string TOP_BUN_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuat
 RedisClient redis_client;
 
 // simulation function prototype
-void simulation(Sai2Model::Sai2Model* robot, 
-				Sai2Model::Sai2Model* spatula, 
-				Sai2Model::Sai2Model* burger, 
-				Sai2Model::Sai2Model* tomato, 
-				Sai2Model::Sai2Model* cheese, 
-				Sai2Model::Sai2Model* lettuce, 
-				Sai2Model::Sai2Model* top_bun,
-				Sai2Model::Sai2Model* bottom_bun, 
-				Simulation::Sai2Simulation* sim, 
-				UIForceWidget *ui_force_widget);
+void simulation(Sai2Model::Sai2Model *robot,
+								Sai2Model::Sai2Model *spatula,
+								Sai2Model::Sai2Model *burger,
+								Sai2Model::Sai2Model *tomato,
+								Sai2Model::Sai2Model *cheese,
+								Sai2Model::Sai2Model *lettuce,
+								Sai2Model::Sai2Model *top_bun,
+								Sai2Model::Sai2Model *bottom_bun,
+								Simulation::Sai2Simulation *sim,
+								UIForceWidget *ui_force_widget);
 
 // callback to print glfw errors
-void glfwError(int error, const char* description);
+void glfwError(int error, const char *description);
 
 // callback to print glew errors
 bool glewInitialize();
 
 // callback when a key is pressed
-void keySelect(GLFWwindow* window, int key, int scancode, int action, int mods);
+void keySelect(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 // callback when a mouse button is pressed
-void mouseClick(GLFWwindow* window, int button, int action, int mods);
+void mouseClick(GLFWwindow *window, int button, int action, int mods);
 
 // flags for scene camera movement
 bool fTransXp = false;
@@ -98,7 +98,8 @@ bool fTransZn = false;
 bool fRotPanTilt = false;
 bool fRobotLinkSelect = false;
 
-int main() {
+int main()
+{
 	cout << "Loading URDF world model file: " << world_file << endl;
 
 	// start redis client
@@ -153,7 +154,6 @@ int main() {
 	sim->setCoeffFrictionStatic(0.9);
 	sim->setCoeffFrictionDynamic(0.2);
 
-
 	// read joint positions, velocities, update model
 	sim->getJointPositions(robot_name, robot->_q);
 	sim->getJointVelocities(robot_name, robot->_dq);
@@ -200,8 +200,8 @@ int main() {
 	glfwInit();
 
 	// retrieve resolution of computer display and position window accordingly
-	GLFWmonitor* primary = glfwGetPrimaryMonitor();
-	const GLFWvidmode* mode = glfwGetVideoMode(primary);
+	GLFWmonitor *primary = glfwGetPrimaryMonitor();
+	const GLFWvidmode *mode = glfwGetVideoMode(primary);
 
 	// information about computer screen and GLUT display window
 	int screenW = mode->width;
@@ -213,7 +213,7 @@ int main() {
 
 	// create window and make it current
 	glfwWindowHint(GLFW_VISIBLE, 0);
-	GLFWwindow* window = glfwCreateWindow(windowW, windowH, "SAI2.0 - PandaApplications", NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(windowW, windowH, "SAI2.0 - PandaApplications", NULL, NULL);
 	glfwSetWindowPos(window, windowPosX, windowPosY);
 	glfwShowWindow(window);
 	glfwMakeContextCurrent(window);
@@ -223,7 +223,7 @@ int main() {
 	glfwSetKeyCallback(window, keySelect);
 	glfwSetMouseButtonCallback(window, mouseClick);
 
-	// init click force widget 
+	// init click force widget
 	auto ui_force_widget = new UIForceWidget(robot_name, robot, graphics);
 	ui_force_widget->setEnable(false);
 
@@ -235,13 +235,13 @@ int main() {
 
 	fSimulationRunning = true;
 
-	redis_client.setEigenMatrixJSON(JOINT_ANGLES_KEY, robot->_q); 
-	redis_client.setEigenMatrixJSON(JOINT_VELOCITIES_KEY, robot->_dq); 
-	redis_client.setEigenMatrixJSON(SPATULA_JOINT_ANGLES_KEY, spatula->_q); 
-	// redis_client.setEigenMatrixJSON(SPATULA_JOINT_ANGLES_KEY, burger->_q); 
+	redis_client.setEigenMatrixJSON(JOINT_ANGLES_KEY, robot->_q);
+	redis_client.setEigenMatrixJSON(JOINT_VELOCITIES_KEY, robot->_dq);
+	redis_client.setEigenMatrixJSON(SPATULA_JOINT_ANGLES_KEY, spatula->_q);
+	// redis_client.setEigenMatrixJSON(SPATULA_JOINT_ANGLES_KEY, burger->_q);
 
 	thread sim_thread(simulation, robot, spatula, burger, tomato, cheese, lettuce, top_bun, bottom_bun, sim, ui_force_widget);
-	
+
 	// while window is open:
 	while (!glfwWindowShouldClose(window) && fSimulationRunning)
 	{
@@ -285,44 +285,53 @@ int main() {
 		cam_roll_axis.normalize();
 		Eigen::Vector3d cam_lookat_axis = camera_lookat;
 		cam_lookat_axis.normalize();
-		if (fTransXp) {
-			camera_pos = camera_pos + 0.05*cam_roll_axis;
-			camera_lookat = camera_lookat + 0.05*cam_roll_axis;
+		if (fTransXp)
+		{
+			camera_pos = camera_pos + 0.05 * cam_roll_axis;
+			camera_lookat = camera_lookat + 0.05 * cam_roll_axis;
 		}
-		if (fTransXn) {
-			camera_pos = camera_pos - 0.05*cam_roll_axis;
-			camera_lookat = camera_lookat - 0.05*cam_roll_axis;
+		if (fTransXn)
+		{
+			camera_pos = camera_pos - 0.05 * cam_roll_axis;
+			camera_lookat = camera_lookat - 0.05 * cam_roll_axis;
 		}
-		if (fTransYp) {
+		if (fTransYp)
+		{
 			// camera_pos = camera_pos + 0.05*cam_lookat_axis;
-			camera_pos = camera_pos + 0.05*cam_up_axis;
-			camera_lookat = camera_lookat + 0.05*cam_up_axis;
+			camera_pos = camera_pos + 0.05 * cam_up_axis;
+			camera_lookat = camera_lookat + 0.05 * cam_up_axis;
 		}
-		if (fTransYn) {
+		if (fTransYn)
+		{
 			// camera_pos = camera_pos - 0.05*cam_lookat_axis;
-			camera_pos = camera_pos - 0.05*cam_up_axis;
-			camera_lookat = camera_lookat - 0.05*cam_up_axis;
+			camera_pos = camera_pos - 0.05 * cam_up_axis;
+			camera_lookat = camera_lookat - 0.05 * cam_up_axis;
 		}
-		if (fTransZp) {
-			camera_pos = camera_pos + 0.1*cam_depth_axis;
-			camera_lookat = camera_lookat + 0.1*cam_depth_axis;
-		}	    
-		if (fTransZn) {
-			camera_pos = camera_pos - 0.1*cam_depth_axis;
-			camera_lookat = camera_lookat - 0.1*cam_depth_axis;
+		if (fTransZp)
+		{
+			camera_pos = camera_pos + 0.1 * cam_depth_axis;
+			camera_lookat = camera_lookat + 0.1 * cam_depth_axis;
 		}
-		if (fRotPanTilt) {
+		if (fTransZn)
+		{
+			camera_pos = camera_pos - 0.1 * cam_depth_axis;
+			camera_lookat = camera_lookat - 0.1 * cam_depth_axis;
+		}
+		if (fRotPanTilt)
+		{
 			// get current cursor position
 			double cursorx, cursory;
 			glfwGetCursorPos(window, &cursorx, &cursory);
 			//TODO: might need to re-scale from screen units to physical units
-			double compass = 0.006*(cursorx - last_cursorx);
-			double azimuth = 0.006*(cursory - last_cursory);
+			double compass = 0.006 * (cursorx - last_cursorx);
+			double azimuth = 0.006 * (cursory - last_cursory);
 			double radius = (camera_pos - camera_lookat).norm();
-			Eigen::Matrix3d m_tilt; m_tilt = Eigen::AngleAxisd(azimuth, -cam_roll_axis);
-			camera_pos = camera_lookat + m_tilt*(camera_pos - camera_lookat);
-			Eigen::Matrix3d m_pan; m_pan = Eigen::AngleAxisd(compass, -cam_up_axis);
-			camera_pos = camera_lookat + m_pan*(camera_pos - camera_lookat);
+			Eigen::Matrix3d m_tilt;
+			m_tilt = Eigen::AngleAxisd(azimuth, -cam_roll_axis);
+			camera_pos = camera_lookat + m_tilt * (camera_pos - camera_lookat);
+			Eigen::Matrix3d m_pan;
+			m_pan = Eigen::AngleAxisd(compass, -cam_up_axis);
+			camera_pos = camera_lookat + m_pan * (camera_pos - camera_lookat);
 		}
 		graphics->setCameraPose(camera_name, camera_pos, cam_up_axis, camera_lookat);
 		glfwGetCursorPos(window, &last_cursorx, &last_cursory);
@@ -359,7 +368,7 @@ int main() {
 	sim_thread.join();
 
 	// destroy context
-	glfwSetWindowShouldClose(window,GL_TRUE);
+	glfwSetWindowShouldClose(window, GL_TRUE);
 	glfwDestroyWindow(window);
 
 	// terminate
@@ -370,17 +379,17 @@ int main() {
 
 //------------------------------------------------------------------------------
 // void simulation(Sai2Model::Sai2Model* robot, Sai2Model::Sai2Model* spatula, Sai2Model::Sai2Model* burger, Simulation::Sai2Simulation* sim, UIForceWidget *ui_force_widget) {
-void simulation(Sai2Model::Sai2Model* robot, 
-				Sai2Model::Sai2Model* spatula, 
-				Sai2Model::Sai2Model* burger, 
-				Sai2Model::Sai2Model* tomato, 
-				Sai2Model::Sai2Model* cheese, 
-				Sai2Model::Sai2Model* lettuce, 
-				Sai2Model::Sai2Model* top_bun,
-				Sai2Model::Sai2Model* bottom_bun, 
-				Simulation::Sai2Simulation* sim, 
-				UIForceWidget *ui_force_widget) {
-
+void simulation(Sai2Model::Sai2Model *robot,
+								Sai2Model::Sai2Model *spatula,
+								Sai2Model::Sai2Model *burger,
+								Sai2Model::Sai2Model *tomato,
+								Sai2Model::Sai2Model *cheese,
+								Sai2Model::Sai2Model *lettuce,
+								Sai2Model::Sai2Model *top_bun,
+								Sai2Model::Sai2Model *bottom_bun,
+								Simulation::Sai2Simulation *sim,
+								UIForceWidget *ui_force_widget)
+{
 
 	int dof = robot->dof();
 
@@ -401,8 +410,8 @@ void simulation(Sai2Model::Sai2Model* robot,
 	timer.initializeTimer();
 	// For David's Laptop: slow_down_factor = 3
 	double slow_down_factor = 2;
-	timer.setLoopFrequency(1000); 
-	double last_time = timer.elapsedTime()/slow_down_factor; //secs
+	timer.setLoopFrequency(1000);
+	double last_time = timer.elapsedTime() / slow_down_factor; //secs
 	bool fTimerDidSleep = true;
 
 	// init variables
@@ -421,9 +430,9 @@ void simulation(Sai2Model::Sai2Model* robot,
 
 	spatula_offset << 0.5, 0.4, 0.46;
 	Matrix3d spatula_rot_init;
-	spatula_rot_init << 0.0, 1.0, 0.0, 
-						-1.0, 0.0, 0.0,
-						0.0, 0.0, 1.0;
+	spatula_rot_init << 0.0, 1.0, 0.0,
+			-1.0, 0.0, 0.0,
+			0.0, 0.0, 1.0;
 
 	Eigen::Vector3d r_burger;
 	// Eigen::Matrix3d q_burger_local;
@@ -432,10 +441,9 @@ void simulation(Sai2Model::Sai2Model* robot,
 
 	burger_offset << 0.5, 0.5, 0.5;
 	// Matrix3d burger_rot_init;
-	// burger_rot_init << 1.0, 0.0, 0.0, 
+	// burger_rot_init << 1.0, 0.0, 0.0,
 	// 					0.0, 1.0, 0.0,
 	// 					0.0, 0.0, 1.0;
-
 
 	Eigen::Vector3d r_bottom_bun = Vector3d::Zero();
 	Eigen::Vector3d bottom_bun_offset;
@@ -444,7 +452,7 @@ void simulation(Sai2Model::Sai2Model* robot,
 	Eigen::Vector3d r_top_bun = Vector3d::Zero();
 	Eigen::Vector3d top_bun_offset;
 	top_bun_offset << 0.7, 0.5, 0.5;
-	
+
 	Eigen::Vector3d r_lettuce = Vector3d::Zero();
 	Eigen::Vector3d lettuce_offset;
 	lettuce_offset << 0.8, 0.5, 0.5;
@@ -457,9 +465,8 @@ void simulation(Sai2Model::Sai2Model* robot,
 	Eigen::Vector3d tomato_offset;
 	tomato_offset << 1.0, 0.5, 0.5;
 
-
-
-	while (fSimulationRunning) {
+	while (fSimulationRunning)
+	{
 		fTimerDidSleep = timer.waitForNextLoop();
 
 		// get gravity torques
@@ -472,7 +479,6 @@ void simulation(Sai2Model::Sai2Model* robot,
 		burger_command_torques = redis_client.getEigenMatrixJSON(BURGER_TORQUES_COMMANDED_KEY);
 		top_bun_command_torques = redis_client.getEigenMatrixJSON(TOP_BUN_TORQUES_COMMANDED_KEY);
 
-		
 		ui_force_widget->getUIForce(ui_force);
 		ui_force_widget->getUIJointTorques(ui_force_command_torques);
 
@@ -485,12 +491,10 @@ void simulation(Sai2Model::Sai2Model* robot,
 		sim->setJointTorques(burger_name, burger_command_torques);
 		sim->setJointTorques(top_bun_name, top_bun_command_torques);
 
-
-
 		// integrate forward
 
 		double curr_time = timer.elapsedTime() / slow_down_factor;
-		double loop_dt = curr_time - last_time; 
+		double loop_dt = curr_time - last_time;
 		sim->integrate(loop_dt);
 
 		// read joint positions, velocities, update model
@@ -574,92 +578,99 @@ void simulation(Sai2Model::Sai2Model* robot,
 	std::cout << "\n";
 	std::cout << "Simulation Loop run time  : " << end_time << " seconds\n";
 	std::cout << "Simulation Loop updates   : " << timer.elapsedCycles() << "\n";
-	std::cout << "Simulation Loop frequency : " << timer.elapsedCycles()/end_time << "Hz\n";
+	std::cout << "Simulation Loop frequency : " << timer.elapsedCycles() / end_time << "Hz\n";
 }
 
 //------------------------------------------------------------------------------
 
-void glfwError(int error, const char* description) {
+void glfwError(int error, const char *description)
+{
 	cerr << "GLFW Error: " << description << endl;
 	exit(1);
 }
 
 //------------------------------------------------------------------------------
 
-bool glewInitialize() {
+bool glewInitialize()
+{
 	bool ret = false;
-	#ifdef GLEW_VERSION
-	if (glewInit() != GLEW_OK) {
+#ifdef GLEW_VERSION
+	if (glewInit() != GLEW_OK)
+	{
 		cout << "Failed to initialize GLEW library" << endl;
 		cout << glewGetErrorString(ret) << endl;
 		glfwTerminate();
-	} else {
+	}
+	else
+	{
 		ret = true;
 	}
-	#endif
+#endif
 	return ret;
 }
 
 //------------------------------------------------------------------------------
 
-void keySelect(GLFWwindow* window, int key, int scancode, int action, int mods)
+void keySelect(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
 	bool set = (action != GLFW_RELEASE);
-	switch(key) {
-		case GLFW_KEY_ESCAPE:
-			// exit application
-			fSimulationRunning = false;
-			glfwSetWindowShouldClose(window, GL_TRUE);
-			break;
-		case GLFW_KEY_RIGHT:
-			fTransXp = set;
-			break;
-		case GLFW_KEY_LEFT:
-			fTransXn = set;
-			break;
-		case GLFW_KEY_UP:
-			fTransYp = set;
-			break;
-		case GLFW_KEY_DOWN:
-			fTransYn = set;
-			break;
-		case GLFW_KEY_A:
-			fTransZp = set;
-			break;
-		case GLFW_KEY_Z:
-			fTransZn = set;
-			break;
-		default:
-			break;
+	switch (key)
+	{
+	case GLFW_KEY_ESCAPE:
+		// exit application
+		fSimulationRunning = false;
+		glfwSetWindowShouldClose(window, GL_TRUE);
+		break;
+	case GLFW_KEY_RIGHT:
+		fTransXp = set;
+		break;
+	case GLFW_KEY_LEFT:
+		fTransXn = set;
+		break;
+	case GLFW_KEY_UP:
+		fTransYp = set;
+		break;
+	case GLFW_KEY_DOWN:
+		fTransYn = set;
+		break;
+	case GLFW_KEY_A:
+		fTransZp = set;
+		break;
+	case GLFW_KEY_Z:
+		fTransZn = set;
+		break;
+	default:
+		break;
 	}
 }
 
 //------------------------------------------------------------------------------
 
-void mouseClick(GLFWwindow* window, int button, int action, int mods) {
+void mouseClick(GLFWwindow *window, int button, int action, int mods)
+{
 	bool set = (action != GLFW_RELEASE);
 	//TODO: mouse interaction with robot
-	switch (button) {
-		// left click pans and tilts
-		case GLFW_MOUSE_BUTTON_LEFT:
-			fRotPanTilt = set;
-			// NOTE: the code below is recommended but doesn't work well
-			// if (fRotPanTilt) {
-			// 	// lock cursor
-			// 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-			// } else {
-			// 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			// }
-			break;
-		// if right click: don't handle. this is for menu selection
-		case GLFW_MOUSE_BUTTON_RIGHT:
-			fRobotLinkSelect = set;
-			break;
-		// if middle click: don't handle. doesn't work well on laptops
-		case GLFW_MOUSE_BUTTON_MIDDLE:
-			break;
-		default:
-			break;
+	switch (button)
+	{
+	// left click pans and tilts
+	case GLFW_MOUSE_BUTTON_LEFT:
+		fRotPanTilt = set;
+		// NOTE: the code below is recommended but doesn't work well
+		// if (fRotPanTilt) {
+		// 	// lock cursor
+		// 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		// } else {
+		// 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		// }
+		break;
+	// if right click: don't handle. this is for menu selection
+	case GLFW_MOUSE_BUTTON_RIGHT:
+		fRobotLinkSelect = set;
+		break;
+	// if middle click: don't handle. doesn't work well on laptops
+	case GLFW_MOUSE_BUTTON_MIDDLE:
+		break;
+	default:
+		break;
 	}
 }
-
