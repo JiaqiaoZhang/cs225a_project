@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.8.12)
-project (gordon_the_robot)
+project (cs225a)
 SET(CMAKE_CXX_FLAGS "-std=c++11 -I/usr/include -I/usr/local/include")
 SET(CMAKE_BUILD_TYPE "Release")
 
@@ -66,7 +66,7 @@ set(CS225A_COMMON_LIBRARIES
 	${GLFW_LIBRARY}
 	)
 
-set (CS225A_BINARY_DIR                  ${PROJECT_SOURCE_DIR}/bin)
+set (CS225A_BINARY_DIR ${PROJECT_SOURCE_DIR}/bin)
 
-add_subdirectory(src)
+add_subdirectory(Gordon_the_robot)
 
