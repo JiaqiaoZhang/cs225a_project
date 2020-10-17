@@ -1,6 +1,6 @@
 # cs225a
 
-This repository will contain the homeworks and demos for the class cs225a.
+This repository will contain the final project for cs225a
 
 ## Dependencies
 The project depends on the sai2 libraries. You have received instructions to install sai2 in class.
