@@ -26,8 +26,8 @@ TARGET_LINK_LIBRARIES (simviz_demo ${CS225A_COMMON_LIBRARIES} ${SAI2-PRIMITIVES_
 # NOTE: this requires an install build
 SET(APP_RESOURCE_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources)
 FILE(MAKE_DIRECTORY ${APP_RESOURCE_DIR})
-FILE(COPY urdf_files/world.urdf DESTINATION ${APP_RESOURCE_DIR})
-# FILE(COPY spatula.urdf burger.urdf tomato.urdf cheese.urdf lettuce.urdf top_bun.urdf bottom_bun.urdf DESTINATION ${APP_RESOURCE_DIR})
+FILE(COPY urdf_files/world_panda_gripper.urdf urdf_files/mmp_panda.urdf DESTINATION ${APP_RESOURCE_DIR})
+FILE(COPY urdf_files/spatula.urdf urdf_files/burger.urdf urdf_files/tomato.urdf urdf_files/cheese.urdf urdf_files/lettuce.urdf urdf_files/top_bun.urdf urdf_files/bottom_bun.urdf DESTINATION ${APP_RESOURCE_DIR})
 
 # for collision demo
 FILE(COPY urdf_files/world.urdf DESTINATION ${APP_RESOURCE_DIR})

@@ -1,0 +1,219 @@
+<?xml version="1.0" ?>
+
+<world name="demo_world" gravity="0.0 0.0 -9.81">
+
+	<robot name="mmp_panda">
+		<model dir="./resources/" path="mmp_panda.urdf" name="mmp_panda" />
+		<!-- elevated robot base above ground -->
+		<origin xyz="0.0 -0.05 0.3514" rpy="0.0 0.0 0.0" />
+	</robot>
+
+	<robot name="spatula">
+		<model dir="./resources/" path="spatula.urdf" name="spatula"/>
+		<origin xyz="0.5 0.4 0.5" rpy="0 0 -1.57" />
+	</robot>
+
+	<robot name="burger">
+		<model dir="./resources/" path="burger.urdf" name="burger"/>
+		<origin xyz="0.5 0.5 0.5" rpy="0 0 0" />
+	</robot>
+
+	<robot name="tomato">
+		<model dir="./resources/" path="tomato.urdf" name="tomato"/>
+		<origin xyz="1.0 0.5 0.5" rpy="0 0 0" />
+	</robot>
+
+	<robot name="cheese">
+		<model dir="./resources/" path="cheese.urdf" name="cheese"/>
+		<origin xyz="0.9 0.5 0.5" rpy="0 0 0" />
+	</robot>
+
+	<robot name="lettuce">
+		<model dir="./resources/" path="lettuce.urdf" name="lettuce"/>
+		<origin xyz="0.8 0.5 0.5" rpy="0 0 0" />
+	</robot>
+
+	<robot name="top_bun">
+		<model dir="./resources/" path="top_bun.urdf" name="top_bun"/>
+		<origin xyz="0.7 0.5 0.5" rpy="0 0 0" />
+	</robot>
+
+	<robot name="bottom_bun">
+		<model dir="./resources/" path="bottom_bun.urdf" name="bottom_bun"/>
+		<origin xyz="0.6 0.5 0.5" rpy="0 0 0" />
+	</robot>
+
+	<static_object name="Ground_With_Texture">
+		<origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+	    <collision>
+	        <origin xyz="0.0 0.0 -0.0001" rpy="0 0 0" />
+	        <geometry>
+	        	<box size="100 100 0.0002" />
+	        </geometry>
+	    </collision>
+	    <visual>
+	    	<origin xyz="0.0 0.0 -0.0001" rpy="0 0 0" />
+	        <geometry>
+	            <mesh filename="./resources/../../../Gordon_the_robot/model/test_objects/meshes/visual/ground.obj" scale="1.0 1.0 1.0"/>
+	        </geometry>
+	    </visual>
+	</static_object>
+
+	<static_object name="Countertop">
+		<origin xyz="1.05 0.5 0.0" rpy="0 0 0" />
+	    <collision>
+	        <origin xyz="-0.775 0.0 0.2286" rpy="0 0 0" />
+	        <geometry>
+				<!-- <mesh filename="./resources/../../../zoom-chef/kitchen_objects/meshes/visual/MarbleCountertopTop.obj" scale="1.0 1.5 1.0"/> -->
+				<box size="1.78816 0.65 0.50292"/>
+	        </geometry>
+	    </collision>
+	    <visual>
+	    	<origin xyz="0 0 0" rpy="0 0 0" />
+	        <geometry>
+	            <mesh filename="./resources/../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/MarbleCountertopBottom.obj" scale="1.0 1.0 1.0"/>
+	        </geometry>
+	    </visual>
+	    <visual>
+	    	<origin xyz="0 0 0" rpy="0 0 0" />
+	        <geometry>
+	            <mesh filename="./resources/../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/MarbleCountertopTop.obj" scale="1.0 1.1 1.0"/>
+	        </geometry>
+	    </visual>
+	</static_object>
+
+	<static_object name="Plate">
+		<origin xyz="-0.45 0.5 0.458" rpy="0 0 0" />
+
+		<!-- <collision>
+	        <origin xyz="0 0 0" rpy="0 0 0" />
+	        <geometry>
+	            <mesh filename="./resources/../../../zoom-chef/kitchen_objects/meshes/collision/Plate.obj" scale="0.001 0.001 0.001"/>
+	        </geometry>
+	    </collision> -->
+
+	    <visual>
+	    	<origin xyz="0 0 0" rpy="0 0 0" />
+	        <geometry>
+	            <mesh filename="./resources/../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/Plate.obj" scale="0.001 0.001 0.001"/>
+	        </geometry>
+	    </visual>
+	</static_object>
+
+	<static_object name="GrillBottom">
+		<origin xyz="0 0.5 0.46990000" rpy="0 0 0" />
+		<collision>
+	        <origin xyz="0 0 0" rpy="0 0 0" />
+	        <geometry>
+	            <!-- <mesh filename="./resources/../../../zoom-chef/kitchen_objects/meshes/collision/GrillBottom.obj" scale="1 1 1"/> -->
+	            <box size="0.6096 0.5588 0.0254"/>
+	        </geometry>
+	    </collision>
+	</static_object>
+
+	<static_object name="Grill">
+		<origin xyz="0.8128 0.5 0"/>
+		<visual>
+	    	<origin xyz="0 0 0" rpy="0 0 0" />
+	        <geometry>
+	            <mesh filename="./resources/../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/GrillCharcoal.obj" scale="1 1 1"/>
+	        </geometry> 
+	        <color rgba="0 0 0 1"/>
+	    </visual>
+	</static_object>
+
+	<static_object name="GrillBack">
+		<origin xyz="0 0.75 0.51334678" rpy="0 0 0" />
+	    <collision>
+	        <geometry>
+	            <!-- <mesh filename="./resources/../../../zoom-chef/kitchen_objects/meshes/collision/GrillBack.obj" scale="1 1 1"/> -->
+	            <box size="0.6096 0.0127 0.06149355"/>
+	        </geometry>
+	        <color rgba="0 0 0 1"/>
+	    </collision>
+	</static_object>
+
+	<static_object name="CountertopBack">
+		<origin xyz="0.55 0.75 0.508" rpy="0 0 0" />
+	    <collision>
+	    	<origin xyz="0 0 0" rpy="0 0 0" />
+	        <geometry>
+	            <box size="0.475 0.0125 0.1" />
+	        </geometry>
+	        <color rgba="0 0 0 1"/>
+	    </collision>
+	    <!-- <visual>
+	    	<origin xyz="0 0 0" rpy="0 0 0" />
+	        <geometry>
+	            <box size="0.475 0.0125 0.1" />
+	        </geometry>
+	        <color rgba="0 0 0 1"/>
+	    </visual> -->
+	</static_object>
+
+	<static_object name="Knob_One">
+		<origin xyz="0.38 0.363 0.47" rpy="0 0 0" />
+<!--
+		<collision>
+	        <origin xyz="0 0 0" rpy="0 0 0" />
+	        <geometry>
+	            <mesh filename="./resources/../../../zoom-chef/kitchen_objects/meshes/collision/Stove_Knob.obj" scale="0.001 0.001 0.001"/>
+	        </geometry>
+	    </collision>
+-->
+	    <!-- <visual>
+	    	<origin xyz="0 0 0" rpy="0 0 0" />
+	        <geometry>
+	            <mesh filename="./resources/../../../zoom-chef/kitchen_objects/meshes/visual/Stove_Knob.obj" scale="0.001 0.001 0.001"/>
+	        </geometry>
+	    </visual> -->
+	</static_object>
+
+	<!-- <static_object name="Knob_Two">
+		<origin xyz="0.38 0.4519 0.47" rpy="0 0 0" />
+	    <visual>
+	    	<origin xyz="0 0 0" rpy="0 0 0" />
+	        <geometry>
+	            <mesh filename="./resources/../../../zoom-chef/kitchen_objects/meshes/visual/Stove_Knob.obj" scale="0.001 0.001 0.001"/>
+	        </geometry>
+	    </visual>
+	</static_object>
+
+	<static_object name="Knob_Three">
+		<origin xyz="0.38 0.5408 0.47" rpy="0 0 0" />
+	    <visual>
+	    	<origin xyz="0 0 0" rpy="0 0 0" />
+	        <geometry>
+	            <mesh filename="./resources/../../../zoom-chef/kitchen_objects/meshes/visual/Stove_Knob.obj" scale="0.001 0.001 0.001"/>
+	        </geometry>
+	    </visual>
+	</static_object>
+
+	<static_object name="Knob_Four">
+		<origin xyz="0.38 0.6297 0.47" rpy="0 0 0" />
+	    <visual>
+	    	<origin xyz="0 0 0" rpy="0 0 0" />
+	        <geometry>
+	            <mesh filename="./resources/../../../zoom-chef/kitchen_objects/meshes/visual/Stove_Knob.obj" scale="0.001 0.001 0.001"/>
+	        </geometry>
+	    </visual>
+	</static_object> -->
+
+	<light name="light1" type="directional">
+		<position xyz="2.0 2.0 2.0" />
+		<lookat xyz="0.0 0.0 0.0" />
+	</light>
+
+	<light name="light2" type="directional">
+		<position xyz="-2.0 -2.0 2.0" />
+		<lookat xyz="0.0 0.0 0.0" />
+	</light>
+
+	<camera name="camera_fixed">
+		<!-- <position xyz="2.0 -0.8 1.0" /> -->
+		<position xyz="0.0 2.0 1.5" />
+		<vertical xyz="0.0 0.0 1.0" />
+		<lookat xyz="0.0 0.0 0.5" />
+	</camera>
+
+</world>

@@ -38,7 +38,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="../../../zoom-chef/mmp_panda/meshes/panda_BaseCombo.obj" />
+        <mesh filename="../../../Gordon_the_robot/model/mmp_panda/meshes/panda_BaseCombo.obj" />
       </geometry>
     </visual>
   </link>
@@ -69,7 +69,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="../../../zoom-chef/panda/meshes/visual/link1.obj"/>
+        <mesh filename="../../../Gordon_the_robot/model/panda/meshes/visual/link1.obj"/>
       </geometry>
     </visual>
     <!-- <collision>
@@ -86,7 +86,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="../../../zoom-chef/panda/meshes/visual/link2.obj"/>
+        <mesh filename="../../../Gordon_the_robot/model/panda/meshes/visual/link2.obj"/>
       </geometry>
     </visual>
     <!-- <collision>
@@ -103,7 +103,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="../../../zoom-chef/panda/meshes/visual/link3.obj"/>
+        <mesh filename="../../../Gordon_the_robot/model/panda/meshes/visual/link3.obj"/>
       </geometry>
     </visual>
     <!-- <collision>
@@ -120,7 +120,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="../../../zoom-chef/panda/meshes/visual/link4.obj"/>
+        <mesh filename="../../../Gordon_the_robot/model/panda/meshes/visual/link4.obj"/>
       </geometry>
     </visual>
 <!--       <collision>
@@ -137,7 +137,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="../../../zoom-chef/panda/meshes/visual/link5.obj"/>
+        <mesh filename="../../../Gordon_the_robot/model/panda/meshes/visual/link5.obj"/>
       </geometry>
     </visual>
 <!--       <collision>
@@ -154,7 +154,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="../../../zoom-chef/panda/meshes/visual/link6.obj"/>
+        <mesh filename="../../../Gordon_the_robot/model/panda/meshes/visual/link6.obj"/>
       </geometry>
     </visual>
     <!-- <collision>
@@ -172,13 +172,13 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="../../../zoom-chef/panda/meshes/visual/link7.obj"/>
+        <mesh filename="../../../Gordon_the_robot/model/panda/meshes/visual/link7.obj"/>
       </geometry>
     </visual>
     <visual>
       <origin xyz="0 0 0.05" rpy="3.14 0 0"/>
       <geometry>
-        <mesh filename="../../../zoom-chef/panda/meshes/visual/chefhat.obj" scale="0.01 0.01 0.01"/>
+        <mesh filename="../../../Gordon_the_robot/model/panda/meshes/visual/chefhat.obj" scale="0.01 0.01 0.01"/>
       </geometry>
     </visual>
     <!-- <collision>
@@ -189,13 +189,13 @@
     <visual>
       <origin xyz="0 0 0.107" rpy="0 0 -0.78539816339" />
       <geometry>
-        <mesh filename="../../../zoom-chef/panda/meshes/visual/hand.obj"/>
+        <mesh filename="../../../Gordon_the_robot/model/panda/meshes/visual/hand.obj"/>
       </geometry>
     </visual>
      <collision>
       <origin xyz="0 0 0.107" rpy="0 0 -0.78539816339" />
       <geometry>
-        <mesh filename="../../../zoom-chef/panda/meshes/collision/hand.obj"/>
+        <mesh filename="../../../Gordon_the_robot/model/panda/meshes/collision/hand.obj"/>
       </geometry>
     </collision>
   </link>
@@ -208,13 +208,13 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="../../../zoom-chef/panda/meshes/collision/finger.obj"
+        <mesh filename="../../../Gordon_the_robot/model/panda/meshes/collision/finger.obj"
         scale="5.0 1.0 2.5"/>
       </geometry>
     </visual>
      <collision>
       <geometry>
-        <mesh filename="../../../zoom-chef/panda/meshes/collision/finger.obj"
+        <mesh filename="../../../Gordon_the_robot/model/panda/meshes/collision/finger.obj"
         scale="5.0 1.0 2.5"/>
       </geometry>
       <friction>
@@ -232,14 +232,14 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 3.14159265359" />
       <geometry>
-        <mesh filename="../../../zoom-chef/panda/meshes/collision/finger.obj"
+        <mesh filename="../../../Gordon_the_robot/model/panda/meshes/collision/finger.obj"
         scale="5.0 1.0 1.5"/>
       </geometry>
     </visual>
      <collision>
       <origin xyz="0 0 0" rpy="0 0 3.14159265359" />
       <geometry>
-        <mesh filename="../../../zoom-chef/panda/meshes/collision/finger.obj"
+        <mesh filename="../../../Gordon_the_robot/model/panda/meshes/collision/finger.obj"
         scale="5.0 1.0 1.5"/>
       </geometry>
       <friction>
@@ -368,66 +368,5 @@
       <limit effort="20" lower="0.0" upper="0.04" velocity="2"/>
       <!-- <mimic joint="finger_joint1" /> -->
     </joint>
-
-<!--
-   <joint name="joint1" type="revolute">
-    <origin xyz="0 0 0.48643" rpy="3.1416 2.7629E-18 -3.14" />
-    <parent link="base_link" />
-    <child link="link1" />
-    <axis xyz="0 0 1" />
-    <limit lower="-10" upper="10" effort="39" velocity="0.8727" />
-  </joint>
-
-  <joint name="joint2" type="revolute">
-    <origin xyz="0 0.005375 -0.12838" rpy="1.5708 2.1343E-17 -1.1102E-16" />
-    <parent link="link1" />
-    <child link="link2" />
-    <axis xyz="0 0 1" />
-    <calibration falling="-45.0" />
-    <limit lower="-10" upper="10" effort="39" velocity="0.8727" />
-  </joint>
-
-  <joint name="joint3" type="revolute">
-    <origin xyz="0 -0.21038 -0.006375" rpy="-1.5708 1.2326E-32 -2.9122E-16" />
-    <parent link="link2" />
-    <child link="link3" />
-    <axis xyz="0 0 1" />
-    <limit lower="-10" upper="10" effort="39" velocity="0.8727" />
-  </joint>
-
-  <joint name="joint4" type="revolute">
-    <origin xyz="0 0.006375 -0.21038" rpy="1.5708 -6.6954E-17 -1.6653E-16" />
-    <parent link="link3" />
-    <child link="link4" />
-    <axis xyz="0 0 1" />
-    <calibration falling="-125.0" />
-    <limit lower="-10" upper="10" effort="39" velocity="0.8727" />
-  </joint>
-
-  <joint name="joint5" type="revolute">
-    <origin xyz="0 -0.20843 -0.006375" rpy="-1.5708 2.2204E-16 -6.373E-17" />
-    <parent link="link4" />
-    <child link="link5" />
-    <axis xyz="0 0 1" />
-    <limit lower="-10" upper="10" effort="9" velocity="0.8727" />
-  </joint>
-
-  <joint name="joint6" type="revolute">
-    <origin xyz="0 0.00017505 -0.10593" rpy="1.5708 9.2076E-28 -8.2157E-15" />
-    <parent link="link5" />
-    <child link="link6" />
-    <axis xyz="0 0 1" />
-    <calibration falling="80.0" />
-    <limit lower="-10" upper="10" effort="9" velocity="0.8727" />
-  </joint>
-
-  <joint name="joint7" type="revolute">
-    <origin xyz="0 -0.10593 -0.00017505" rpy="-1.5708 -5.5511E-17 9.6396E-17" />
-    <parent link="link6" />
-    <child link="link7" />
-    <axis xyz="0 0 1" />
-    <limit lower="-10" upper="10" effort="9" velocity="0.8727" />
-  </joint>
--->
   
 </robot> 

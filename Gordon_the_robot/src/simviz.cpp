@@ -5,14 +5,16 @@
 #include <dynamics3d.h>
 #include "redis/RedisClient.h"
 #include "timer/LoopTimer.h"
+#include <GLFW/glfw3.h>									 // must be loaded after loading opengl/glew
+#include "uiforce/UIForceWidget.h"			 // used for right-click drag interaction in window
+#include <random>												 // used for white-noise generation
+#include "force_sensor/ForceSensorSim.h" // references src folder in sai2-common directory
+#include "force_sensor/ForceSensorDisplay.h"
+#include <signal.h>
 
-#include <GLFW/glfw3.h> //must be loaded after loading opengl/glew
 #include <cmath>
-#include "uiforce/UIForceWidget.h"
-
 #include <iostream>
 #include <string>
-
 #include <signal.h>
 bool fSimulationRunning = false;
 void sighandler(int) { fSimulationRunning = false; }
@@ -118,6 +120,7 @@ int main()
 
 	// load robots
 	auto robot = new Sai2Model::Sai2Model(robot_file, false);
+	robot->updateModel();
 	robot->updateKinematics();
 
 	auto spatula = new Sai2Model::Sai2Model(spatula_file, false);
@@ -241,6 +244,9 @@ int main()
 	// redis_client.setEigenMatrixJSON(SPATULA_JOINT_ANGLES_KEY, burger->_q);
 
 	thread sim_thread(simulation, robot, spatula, burger, tomato, cheese, lettuce, top_bun, bottom_bun, sim, ui_force_widget);
+
+	// initialize glew
+	glewInitialize();
 
 	// while window is open:
 	while (!glfwWindowShouldClose(window) && fSimulationRunning)
