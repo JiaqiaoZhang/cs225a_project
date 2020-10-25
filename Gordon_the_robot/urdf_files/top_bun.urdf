@@ -52,7 +52,7 @@
       <visual>
         <origin xyz="0 0 0.009525"/>
         <geometry>
-          <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/TopBun.obj" scale="1.0 1.0 1.0"/>
+          <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/bread.obj" scale="1.0 1.0 1.0"/>
         </geometry>
       </visual>
       <collision>

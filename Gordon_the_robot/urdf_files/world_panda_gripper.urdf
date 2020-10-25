@@ -15,7 +15,7 @@
 
 	<robot name="burger">
 		<model dir="./resources/" path="burger.urdf" name="burger"/>
-		<origin xyz="0.5 0.5 0.5" rpy="0 0 0" />
+		<origin xyz="0.9 0.5 0.5" rpy="0 0 0" />
 	</robot>
 
 	<robot name="tomato">
@@ -25,7 +25,7 @@
 
 	<robot name="cheese">
 		<model dir="./resources/" path="cheese.urdf" name="cheese"/>
-		<origin xyz="0.9 0.5 0.5" rpy="0 0 0" />
+		<origin xyz="0.5 0.5 0.5" rpy="0 0 0" />
 	</robot>
 
 	<robot name="lettuce">
@@ -35,13 +35,31 @@
 
 	<robot name="top_bun">
 		<model dir="./resources/" path="top_bun.urdf" name="top_bun"/>
-		<origin xyz="0.7 0.5 0.5" rpy="0 0 0" />
+		<origin xyz="0.4 0.5 0.5" rpy="0 0 0.78" />
 	</robot>
 
 	<robot name="bottom_bun">
 		<model dir="./resources/" path="bottom_bun.urdf" name="bottom_bun"/>
 		<origin xyz="0.6 0.5 0.5" rpy="0 0 0" />
 	</robot>
+
+	<static_object name="Cutting_Board">
+		<origin xyz="0.5 0.5 0.458" rpy="0 0 0" />
+
+		<collision>
+	        <origin xyz="0 0 0" rpy="0 0 0" />
+	        <geometry>
+	            <mesh filename="./resources/../../../Gordon_the_robot/model/kitchen_objects/meshes/collision/Cutting_Board.obj" scale="0.001 0.001 0.001"/>
+	        </geometry>
+	    </collision>
+
+	    <visual>
+	    	<origin xyz="0 0 0" rpy="0 0 0" />
+	        <geometry>
+	            <mesh filename="./resources/../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/Cutting_Board.obj" scale="0.001 0.001 0.001"/>
+	        </geometry>
+	    </visual>
+	</static_object>
 
 	<static_object name="Ground_With_Texture">
 		<origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
