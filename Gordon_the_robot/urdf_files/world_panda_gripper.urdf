@@ -35,7 +35,7 @@
 
 	<robot name="top_bun">
 		<model dir="./resources/" path="top_bun.urdf" name="top_bun"/>
-		<origin xyz="0.4 0.5 0.5" rpy="0 0 0.78" />
+		<origin xyz="0.5 0.5 0.5" rpy="-1.57 0 0" />
 	</robot>
 
 	<robot name="bottom_bun">
@@ -44,19 +44,19 @@
 	</robot>
 
 	<static_object name="Cutting_Board">
-		<origin xyz="0.5 0.5 0.458" rpy="0 0 0" />
+		<origin xyz="0.6 0.5 0.458" rpy="0 0 1.57" />
 
 		<collision>
 	        <origin xyz="0 0 0" rpy="0 0 0" />
 	        <geometry>
-	            <mesh filename="./resources/../../../Gordon_the_robot/model/kitchen_objects/meshes/collision/Cutting_Board.obj" scale="0.001 0.001 0.001"/>
+	            <mesh filename="./resources/../../../Gordon_the_robot/model/kitchen_objects/meshes/collision/Cutting_Board.obj" scale="0.0015 0.0015 0.001"/>
 	        </geometry>
 	    </collision>
 
 	    <visual>
 	    	<origin xyz="0 0 0" rpy="0 0 0" />
 	        <geometry>
-	            <mesh filename="./resources/../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/Cutting_Board.obj" scale="0.001 0.001 0.001"/>
+	            <mesh filename="./resources/../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/Cutting_Board.obj" scale="0.0015 0.0015 0.001"/>
 	        </geometry>
 	    </visual>
 	</static_object>
@@ -197,7 +197,7 @@
 		<visual>
 	    	<origin xyz="0 0 0" rpy="0 0 0" />
 	        <geometry>
-	            <mesh filename="./resources/../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/GrillCharcoal.obj" scale="1 1 1"/>
+	            <mesh filename="./resources/../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/TallGrill.obj" scale="1 1 1"/>
 	        </geometry> 
 	        <color rgba="0 0 0 1"/>
 	    </visual>
