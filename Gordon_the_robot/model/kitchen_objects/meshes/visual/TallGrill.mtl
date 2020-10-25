@@ -1,7 +1,7 @@
-# Blender MTL File: 'None'
+# Blender MTL File: 'TallGrill.blend'
 # Material Count: 1
 
-newmtl Default_OBJ
+newmtl Default_OBJ.001
 Ns 900.000000
 Ka 0.359375 0.359375 0.359375
 Kd 0.800000 0.800000 0.800000
