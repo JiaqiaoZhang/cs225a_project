@@ -181,28 +181,20 @@
         <mesh filename="../../../Gordon_the_robot/model/panda/meshes/visual/chefhat.obj" scale="0.01 0.01 0.01"/>
       </geometry>
     </visual>
-    <!-- <collision>
-      <geometry>
-        <mesh filename="../../../model/panda/meshes/collision/link7.obj"/>
-      </geometry>
-    </collision> -->
-        <!-- <visual>
-      <origin xyz="0 0 0.107" rpy="0 0 -0.78539816339" />
-      <geometry>
-        <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/Spatula.obj"/>
-      </geometry>
-    </visual>
-     <collision>
-      <origin xyz="0 0 0.107" rpy="0 0 -0.78539816339" />
-      <geometry>
-        <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/collision/Spatula.obj"/>
-      </geometry>
-    </collision> -->
     <visual>
       <origin xyz="0 0 0.107" rpy="0 0 -0.78539816339" />
       <geometry>
         <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/Spatula.obj"/>
       </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0 -0.2 0.217" rpy="0 0 -0.78539816339" />
+      <geometry>
+        <sphere radius = "0.01"/>
+      </geometry>
+      <material name="red">
+      <color rgba="1 0 0 1"/>
+      </material> 
     </visual>
      <collision>
       <origin xyz="0 0 0.107" rpy="0 0 -0.78539816339" />
@@ -379,7 +371,7 @@
       <dynamics damping="50.0" friction="0.0"/>
       <calibration rising="-0.02" />
       <limit effort="20" lower="0.0" upper="0.04" velocity="2"/>
-      <!-- <mimic joint="finger_joint1" /> -->
+      <mimic joint="finger_joint1" />
     </joint> -->
   
 </robot> 

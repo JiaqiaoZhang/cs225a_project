@@ -53,12 +53,18 @@
          <origin xyz = "0 0 0.01"/>
         <geometry>
           <!-- <mesh filename="../../../zoom-chef/kitchen_objects/meshes/visual/Burger.obj" scale="1.0 1.0 1.0"/> -->
-          <cylinder length="0.02" radius="0.039"/>
+           <box size="0.1 0.1 0.003175"/>
         </geometry>
-        <material name="brown">
-        <color rgba="0.14 0.06 0.03 1"/>
-        </material>
+        <material name="yellow">
+        <color rgba="255 216 0 1"/>
+        </material> 
       </visual>
+      <!-- <visual>
+        <origin xyz="0 0 0.009525"/>
+        <geometry>
+          <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/CheeseTwo.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual> -->
       <collision>
         <geometry>
           <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/collision/BurgerPrism.obj" scale="1.0 1.0 1.0"/>
