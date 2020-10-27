@@ -10,7 +10,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Kd images/charcoal.jpg
+map_Kd /Users/josephwang/Documents/RobotProject/cs225a_project/Gordon_the_robot/model/kitchen_objects/meshes/visual/images/charcoal.jpg
 
 newmtl Default_OBJ.001
 Ns 421.182339
