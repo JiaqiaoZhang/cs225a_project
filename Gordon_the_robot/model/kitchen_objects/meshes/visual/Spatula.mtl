@@ -1,5 +1,5 @@
-# Blender MTL File: 'spatula.blend'
-# Material Count: 2
+# Blender MTL File: 'spetulaCorrectOri.blend'
+# Material Count: 1
 
 newmtl Default_OBJ
 Ns 225.000000
@@ -10,15 +10,3 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Kd images/charcoal.jpg
-
-newmtl Default_OBJ.001
-Ns 421.182339
-Ka 1.000000 1.000000 1.000000
-Kd 0.800000 0.800000 0.800000
-Ks 1.000000 1.000000 1.000000
-Ke 0.000000 0.000000 0.000000
-Ni 1.450000
-d 1.000000
-illum 3
-map_Kd /Users/josephwang/Downloads/stainless_steel.jpg

@@ -96,13 +96,13 @@
       <collision>
         <origin xyz="0 0 0.0" rpy="0 0 0" />
         <geometry>
-          <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/collision/SpatulaBase.obj" scale="1.0 1.0 1.0"/>
+          <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/collision/Spatula.obj" scale="1.0 1.0 1.0"/>
         </geometry>
       </collision>
       <visual>
         <origin xyz="0 0 0.0" rpy="0 0 0" />
         <geometry>
-          <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/SpatulaVisual.obj" scale="1.0 1.0 1.0"/>
+          <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/Spatula.obj" scale="1.0 1.0 1.0"/>
         </geometry>
       </visual>
     </link>
