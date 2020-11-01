@@ -182,14 +182,14 @@
       </geometry>
     </visual>
     <visual>
-      <origin xyz="0 0 0.107" rpy="0 0 -0.78539816339" />
+      <origin xyz="0 0 0.107" rpy="0 0 0" />
       <geometry>
         <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/Spatula.obj"/>
       </geometry>
     </visual>
     <visual>
-      <!-- <origin xyz="0 0.11 0.203" rpy="0 0 -0.78539816339" /> -->
-      <origin xyz="0 -0.11 0.203" rpy="0 0 -0.78539816339" /> 
+      <!-- 0.107 + 0.11064 = 0.21764 -->
+      <origin xyz="0 0.203 0.21764" rpy="0 0 0" />
       <geometry>
         <sphere radius = "0.01"/>  
       </geometry>
@@ -198,7 +198,7 @@
       </material> 
     </visual>
      <collision>
-      <origin xyz="0 0 0.107" rpy="0 0 -0.78539816339" />
+      <origin xyz="0 0 0.107" rpy="0 0 0" />
       <geometry>
         <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/collision/Spatula.obj"/>
       </geometry>

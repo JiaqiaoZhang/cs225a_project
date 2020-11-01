@@ -161,12 +161,10 @@ int main()
 	bool top_bun_actuate = false;
 	MatrixXd N_top_bun = MatrixXd::Identity(6, 6);
 
-	// auto bottom_bun = new Sai2Model::Sai2Model(bottom_bun_file, false);
-	// Vector3d r_bottom_bun = redis_client.getEigenMatrixJSON(BOTTOM_BUN_POSITION_KEY);
-	// for (int i=0; i<3; i++)
-	// {
-	// 	bottom_bun->_q(i)=r_bottom_bun(i);
-	// }
+	// auto bottom_bun = new Sai2Model::Saiset up signal handler
+	signal(SIGABRT, &sighandler);
+	signal(SIGTERM, &sighandler);
+	signal(SIGINT, &sighandler);
 
 	// auto bottom_bun = new Sai2Model::Sai2Model(bottom_bun_file, false);
 	// Vector3d r_bottom_bun = redis_client.getEigenMatrixJSON(BOTTOM_BUN_POSITION_KEY);
@@ -701,7 +699,7 @@ int main()
 
 			} // goal reached if-statement
 		}		// posori if-statement
-				//-----------------------------------------------*******STACKING FOOD CONTROL********---------------------------------------------------------
+		//-----------------------------------------------*******STACKING FOOD CONTROL********---------------------------------------------------------
 		// //if(food_actuate[plate_index])
 		for (int f = 0; f < 3; f++)
 		{

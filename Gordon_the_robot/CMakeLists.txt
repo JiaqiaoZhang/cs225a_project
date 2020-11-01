@@ -5,7 +5,7 @@ add_definitions(${SAI2-PRIMITIVES_DEFINITIONS})
 
 # create an executable
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CS225A_BINARY_DIR}/Gordon-robot)
-ADD_EXECUTABLE (controller_Gordon_robot src/controller.cpp ${CS225A_COMMON_SOURCE})
+ADD_EXECUTABLE (controller_Gordon_robot src/controller_Gordon.cpp ${CS225A_COMMON_SOURCE})
 ADD_EXECUTABLE (simviz_Gordon_robot src/simviz.cpp ${CS225A_COMMON_SOURCE})
 
 # and link the library against the executable

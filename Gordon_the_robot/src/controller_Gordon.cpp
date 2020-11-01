@@ -1,14 +1,20 @@
 #include <Sai2Model.h>
 #include "redis/RedisClient.h"
 #include "timer/LoopTimer.h"
+#include "Sai2Primitives.h"
 
 #include <iostream>
 #include <string>
 
+#include <signal.h>
 using namespace std;
 using namespace Eigen;
 
-#include <signal.h>
+bool runloop = true;
+void sighandler(int sig)
+{
+	runloop = false;
+}
 /*
 Define tasks: idle, align, slide, lift_spatula, drop_food, flip_food, reset
 Define states: state1, state2(assume task2 is one assembled object), state3(serve food)
@@ -111,48 +117,49 @@ Change task to reset
 #define RESET 6
 
 // states
-#define STACKING 1
-#define FLIPPING 2
-#define SERVING 3
+#define STACKING 7
+#define FLIPPING 8
+#define SERVING 9
 
 // base
-#define STACK_BASE 0
-#define GRILL_BASE 1
+#define STACK_BASE 10
+#define GRILL_BASE 11
 
 const std::string JOINT_ANGLES_KEY = "sai2::cs225a::project::sensors::q";
 const std::string JOINT_VELOCITIES_KEY = "sai2::cs225a::project::sensors::dq";
 const std::string JOINT_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::fgc";
 // KEY FOR SPATULA POSITION
-const std::string SPATULA_POSITION_KEY = "sai2::cs225a::spatula::sensors::r_spatula";
-const std::string SPATULA_ORIENTATION_KEY = "sai2::cs225a::spatula::sensors::ori_spatula";
-const std::string SPATULA_JOINT_ANGLES_KEY = "sai2::cs225a::spatula::sensors::spatula_q";
+// const std::string SPATULA_POSITION_KEY = "sai2::cs225a::spatula::sensors::r_spatula";
+// const std::string SPATULA_ORIENTATION_KEY = "sai2::cs225a::spatula::sensors::ori_spatula";
+// const std::string SPATULA_JOINT_ANGLES_KEY = "sai2::cs225a::spatula::sensors::spatula_q";
 // KEY POSITION FOR BURGER
 const std::string BURGER_POSITION_KEY = "sai2::cs225a::burger::sensors::r_burger";
-const std::string TOP_BREAD_POSITION_KEY = "sai2::cs225a::top_bread::sensors::r_top_bread";
+const std::string TOP_BREAD_POSITION_KEY = "sai2::cs225a::top_bun::sensors::r_top_bun";
 // KEY POSITION FOR BUNS
-const std::string BOTTOM_BREAD_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::bottom_bread";
+const std::string BOTTOM_BREAD_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::bottom_bun";
 
-const std::string BOTTOM_BREAD_POSITION_KEY = "sai2::cs225a::bottom_bread::sensors::r_bottom_bread";
+const std::string BOTTOM_BREAD_POSITION_KEY = "sai2::cs225a::bottom_bun::sensors::r_bottom_bun";
 const std::string BURGER_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::burger";
-const std::string TOP_BREAD_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::top_bread";
+const std::string TOP_BREAD_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::top_bun";
 
 //robot
-const string robot_file = "./resources/mmp_panda.urdf";
+const std::string robot_file = "./resources/mmp_panda.urdf";
 
 // //burger
-const string burger_file = "./resources/burger.urdf";
-const string burger_name = "burger";
+const std::string burger_file = "./resources/burger.urdf";
+const std::string burger_name = "burger";
 // bun 1
-const string bottom_bread_file = "./resources/bottom_bread.urdf";
-const string bottom_bread_name = "bot_bun";
+const std::string bottom_bread_file = "./resources/bottom_bun.urdf";
+const std::string bottom_bread_name = "bot_bun";
 // // bun 2
-const string top_bread_file = "./resources/top_bread.urdf";
-const string top_bread_name = "top_bread";
+const std::string top_bread_file = "./resources/top_bun.urdf";
+const std::string top_bread_name = "top_bun";
 
+unsigned long long controller_counter = 0;
 int main()
 {
 	int task = IDLE;
-	int state = STACKING;
+	int state = ALIGN;
 	int base = STACK_BASE;
 	int grill_idx = 0;
 	int flipping_idx = 0;
@@ -212,8 +219,8 @@ int main()
 	top_bread_task->_kp = 75.0;
 	top_bread_task->_kv = 50.0;
 
-	// bool food_actuate[] = {bottom_bread_actuate, burger_actuate, top_bread_actuate};
-	// MatrixXd N_food[] = {N_bottom_bread, N_burger, N_top_bread};
+	bool food_actuate[] = {bottom_bread_actuate, burger_actuate, top_bread_actuate};
+	MatrixXd N_food[] = {N_bottom_bread, N_burger, N_top_bread};
 
 	Sai2Primitives::JointTask *food_task[] = {bottom_bread_task, burger_task, top_bread_task};
 	Sai2Model::Sai2Model *food_robot[] = {bottom_bread, burger, top_bread};
@@ -229,24 +236,6 @@ int main()
 	base_offset << 0.0, 0.0, 0.1757;
 	// base_offset << 0.0, -0.05, 0.3514;
 
-	// Matrix3d handle_rot_local;
-	// handle_rot_local << -0.3553997, -0.3516974, 0.8660254,
-	// 		-0.7033947, 0.7107995, 0.0000000,
-	// 		-0.6155704, -0.6091577, -0.5000000;
-
-	// spatula
-
-	// Vector3d r_spatula = Vector3d::Zero();
-	// Matrix3d ori_spatula = Matrix3d::Zero();
-	// VectorXd spatula_q(6);
-	// r_spatula = redis_client.getEigenMatrixJSON(SPATULA_POSITION_KEY);
-	// Vector3d r_spatula_init = r_spatula;
-	// ori_spatula = redis_client.getEigenMatrixJSON(SPATULA_ORIENTATION_KEY);
-	// Vector3d del_r; // r_spatula - r_end_effector
-	// Matrix3d ori_spatula_level = ori_spatula;
-	// spatula_q = redis_client.getEigenMatrixJSON(SPATULA_JOINT_ANGLES_KEY);
-	// burger
-
 	// prepare controller
 	int dof = robot->dof();
 	VectorXd command_torques = VectorXd::Zero(dof);
@@ -254,7 +243,7 @@ int main()
 
 	// pose task for spatula
 	const string control_link = "link7";
-	const Vector3d control_point = Vector3d(0, 0.2, 0.217); // ??
+	const Vector3d control_point = Vector3d(0, 0.203, 0.21764); // 0 0.203 0.21764
 	auto posori_task = new Sai2Primitives::PosOriTask(robot, control_link, control_point);
 
 #ifdef USING_OTG
@@ -292,7 +281,7 @@ int main()
 	double start_time = timer.elapsedTime(); //secs
 	bool fTimerDidSleep = true;
 
-	Matrix3d good_ee_rot;
+	Matrix3d good_ee_rot; //
 	good_ee_rot << 0.703586, -0.710608, -0.0017762,
 			-0.337309, -0.336174, 0.879324,
 			-0.625451, -0.618081, -0.476221;
@@ -340,17 +329,79 @@ int main()
 	// plate_food << -0.415193+0.02, 0.481433-0.21, 0.53;
 
 	double y_offset_tip = 0.051; // according to onshape - distance between spatula origin and front of spatula base
-}
-switch (state)
-{
-case STACKING:
-	// set velocity to zero
-	break;
-case FLIPPING:
-	// align the
-	break;
-case SERVING:
-	break;
-case RESET:
-	break;
+
+	while (runloop)
+	{
+		timer.waitForNextLoop();
+		double time = timer.elapsedTime() - start_time;
+
+		// read robot state from redis
+		robot->_q = redis_client.getEigenMatrixJSON(JOINT_ANGLES_KEY);
+		robot->_dq = redis_client.getEigenMatrixJSON(JOINT_VELOCITIES_KEY);
+		// r_spatula = redis_client.getEigenMatrixJSON(SPATULA_POSITION_KEY);
+		// ori_spatula = redis_client.getEigenMatrixJSON(SPATULA_ORIENTATION_KEY);
+
+		r_bottom_bread = redis_client.getEigenMatrixJSON(BOTTOM_BREAD_POSITION_KEY);
+		r_top_bread = redis_client.getEigenMatrixJSON(TOP_BREAD_POSITION_KEY);
+		r_burger = redis_client.getEigenMatrixJSON(BURGER_POSITION_KEY);
+
+		Vector3d stack_foods[] = {r_bottom_bread, r_burger, r_top_bread};
+
+		robot->updateModel();
+
+		VectorXd q_curr_desired(10); // container  7 for joints, 3 for mobile base
+		q_curr_desired = robot->_q;
+
+		VectorXd dq_curr_desired = VectorXd::Zero(12);
+
+		Vector3d spatula_pos;
+		robot->positionInWorld(spatula_pos, control_link, control_point);
+		Matrix3d spatula_rot;
+		robot->rotationInWorld(spatula_rot, control_link);
+		// cout << time << endl;
+
+		switch (state)
+		{
+		case IDLE:
+			robot->_dq = dq_curr_desired;
+			break;
+		case ALIGN:
+			// If(task is to align){
+			// moving to the chopping board area
+			// align the spatula to the object[grill_index]
+			// if (position and ori reached){change task to slide}
+			// }
+			if (time > 2.0)
+			{
+				cout << "swich to Align" << endl;
+				q_curr_desired(0) = -0.3514; // move to cutting board
+				joint_task->_use_velocity_saturation_flag = true;
+				joint_task->_saturation_velocity(0) = 0.2;
+				state = IDLE;
+			}
+			break;
+		case STACKING:
+			// set velocity to zero
+			break;
+		case FLIPPING:
+			// align the
+			break;
+		case SERVING:
+			break;
+		case RESET:
+			break;
+		}
+		joint_task->_desired_position = q_curr_desired;
+		// compute torques
+		joint_task->computeTorques(joint_task_torques);
+		command_torques = joint_task_torques;
+		if ((robot->_q - q_curr_desired).norm() < 0.05)
+		{
+			state = IDLE;
+		}
+
+		redis_client.setEigenMatrixJSON(JOINT_TORQUES_COMMANDED_KEY, command_torques);
+
+		controller_counter++;
+	}
 }
