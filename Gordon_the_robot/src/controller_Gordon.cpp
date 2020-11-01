@@ -114,8 +114,9 @@ Change task to reset
 #define LIFT_SPATULA 3
 #define DROP_FOOD 4
 #define FLIP_FOOD 5
-#define RESET 6
-
+#define RESET_TASK 6
+#define MOVE_TO_BOARD 12
+#define MOVE_TO_GRILL 13
 // states
 #define STACKING 7
 #define FLIPPING 8
@@ -243,7 +244,7 @@ int main()
 
 	// pose task for spatula
 	const string control_link = "link7";
-	const Vector3d control_point = Vector3d(0, 0.203, 0.21764); // 0 0.203 0.21764
+	const Vector3d control_point = Vector3d(0, -0.203, 0.21764); // 0 0.203 0.21764
 	auto posori_task = new Sai2Primitives::PosOriTask(robot, control_link, control_point);
 
 #ifdef USING_OTG
@@ -350,7 +351,7 @@ int main()
 
 		robot->updateModel();
 
-		VectorXd q_curr_desired(10); // container  7 for joints, 3 for mobile base
+		VectorXd q_curr_desired = VectorXd::Zero(10); // container  7 for joints, 3 for mobile base
 		q_curr_desired = robot->_q;
 
 		Vector3d spatula_pos;
@@ -362,16 +363,18 @@ int main()
 		joint_task->updateTaskModel(N_prec);
 		joint_task->_use_velocity_saturation_flag = false;
 
+		posori_task->updateTaskModel(N_prec);
 		switch (state)
 		{
 		case STACKING:
+		{
 			/* code */
-			std::vector<int> tasks = {ALIGN, SLIDE, LIFT_SPATULA, DROP_FOOD};
+			std::vector<int> tasks = {MOVE_TO_BOARD, ALIGN, SLIDE, LIFT_SPATULA, DROP_FOOD};
 			task = tasks[taskIndex];
 			if (taskFinished)
 			{
 				taskIndex++;
-				taskFinished = False;
+				taskFinished = false;
 				cout << "switch to task nunber" << taskIndex << endl;
 			}
 			if (taskIndex == tasks.size())
@@ -380,8 +383,10 @@ int main()
 				cout << "switch to FLIPPING state" << endl;
 				taskIndex = 0;
 			}
-			break;
+		}
+		break;
 		case FLIPPING:
+		{
 			std::vector<int> tasks = {ALIGN, SLIDE, LIFT_SPATULA, FLIP_FOOD, DROP_FOOD};
 			task = tasks[taskIndex];
 			if (taskFinished)
@@ -396,9 +401,10 @@ int main()
 				cout << "switch to SERVING state" << endl;
 				taskIndex = 0;
 			}
-
-			break;
+		}
+		break;
 		case SERVING:
+		{
 			std::vector<int> tasks = {ALIGN, SLIDE, LIFT_SPATULA, DROP_FOOD};
 			task = tasks[taskIndex];
 			if (taskFinished)
@@ -409,45 +415,63 @@ int main()
 			}
 			if (taskIndex == tasks.size())
 			{
-				state = default;
+				// state = default;
 				cout << "Finish" << endl;
+				runloop = false;
 				taskIndex = 0;
 			}
-			break;
+		}
+		break;
 		default:
+		{
 			task = IDLE;
-			break;
+		}
+		break;
 		}
 
 		switch (task)
 		{
 		case IDLE:
-
+		{
 			// VectorXd dq_curr_desired = VectorXd::Zero(12);
 			// robot->_dq = dq_curr_desired;
 			q_curr_desired = robot->_q;
-			break;
-		case ALIGN:
-			// move to cutting board
+		}
+		break;
+		case MOVE_TO_BOARD:
+		{
 			q_curr_desired(0) = 0.42;
+			// q_curr_desired(9) = -M_PI;/
 			joint_task->_use_velocity_saturation_flag = true;
 			joint_task->_saturation_velocity(0) = 0.2;
-
+			if ((robot->_q - q_curr_desired).norm() < 0.05)
+			{
+				// cout << "swich to IDLE" << endl;
+				taskFinished = true;
+				// state = SLIDE;
+			}
+		}
+		break;
+		case ALIGN:
+		{
 			// align the spatula with the objects
 			posori_task->reInitializeTask();
 			Vector3d r_food = stack_foods[stack_idx];
-			Vector3d robot_offset = Vector3d(0.0, -0.05, 0.3514);
-			r_align = r_food - robot_offset;
+			Vector3d robot_offset = Vector3d(0.1, 0.15, 0.3514);
+			Vector3d r_align = r_food - robot_offset;
+			// Vector3d r_align = r_food;
 			posori_task->_desired_position = r_align;
+			// posori_task->_desired_orientation = good_ee_rot;
 			// cout << robot->_q(0) << endl;
 			// cout << q_curr_desired(0) << endl;
-			if ((robot->_q - q_curr_desired).norm() < 0.05)
+			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
 			{
-				cout << "swich to IDLE" << endl;
-				taskFinished = TRUE;
+				// cout << "swich to IDLE" << endl;
+				taskFinished = true;
 				// state = SLIDE;
 			}
-			break;
+		}
+		break;
 		case SLIDE:
 			break;
 		case LIFT_SPATULA:
@@ -460,7 +484,10 @@ int main()
 			break;
 		case SERVING:
 			break;
-		case RESET:
+		case RESET_TASK:
+			break;
+		default:
+			// task = IDLE;
 			break;
 		}
 

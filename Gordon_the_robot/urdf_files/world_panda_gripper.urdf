@@ -77,7 +77,7 @@
 	    </visual>
 	</static_object>
 
-	<static_object name="wall_back">
+	<!-- <static_object name="wall_back">
 		<origin xyz="0.0 2.5 0.0" rpy="0 0 0" />
 	    <collision>
 	        <origin xyz="0.0 0.0 -0.0001" rpy="1.57 0 0" />
@@ -91,7 +91,7 @@
 	            <mesh filename="./resources/../../../Gordon_the_robot/model/test_objects/meshes/visual/ground3.obj" scale="1.0 1.0 1.0"/>
 	        </geometry>
 	    </visual>
-	</static_object>
+	</static_object> -->
 
 	<static_object name="wall_front">
 		<origin xyz="0.0 -2.0 0.0" rpy="0 0 0" />
