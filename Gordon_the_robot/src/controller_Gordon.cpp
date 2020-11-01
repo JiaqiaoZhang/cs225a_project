@@ -158,10 +158,10 @@ const std::string top_bread_name = "top_bun";
 unsigned long long controller_counter = 0;
 int main()
 {
-	int task = IDLE;
-	int state = ALIGN;
+	int task = ALIGN;
+	int state = STACKING;
 	int base = STACK_BASE;
-	int grill_idx = 0;
+	int stack_idx = 0;
 	int flipping_idx = 0;
 	bool flip_flag = false;
 	unsigned long long counter = 0;
@@ -329,7 +329,8 @@ int main()
 	// plate_food << -0.415193+0.02, 0.481433-0.21, 0.53;
 
 	double y_offset_tip = 0.051; // according to onshape - distance between spatula origin and front of spatula base
-
+	bool taskFinished = false;
+	int taskIndex = 0;
 	while (runloop)
 	{
 		timer.waitForNextLoop();
@@ -352,33 +353,104 @@ int main()
 		VectorXd q_curr_desired(10); // container  7 for joints, 3 for mobile base
 		q_curr_desired = robot->_q;
 
-		VectorXd dq_curr_desired = VectorXd::Zero(12);
-
 		Vector3d spatula_pos;
 		robot->positionInWorld(spatula_pos, control_link, control_point);
 		Matrix3d spatula_rot;
 		robot->rotationInWorld(spatula_rot, control_link);
-		// cout << time << endl;
+		// cout << state << endl;
+		N_prec.setIdentity();
+		joint_task->updateTaskModel(N_prec);
+		joint_task->_use_velocity_saturation_flag = false;
 
 		switch (state)
 		{
+		case STACKING:
+			/* code */
+			std::vector<int> tasks = {ALIGN, SLIDE, LIFT_SPATULA, DROP_FOOD};
+			task = tasks[taskIndex];
+			if (taskFinished)
+			{
+				taskIndex++;
+				taskFinished = False;
+				cout << "switch to task nunber" << taskIndex << endl;
+			}
+			if (taskIndex == tasks.size())
+			{
+				state = FLIPPING;
+				cout << "switch to FLIPPING state" << endl;
+				taskIndex = 0;
+			}
+			break;
+		case FLIPPING:
+			std::vector<int> tasks = {ALIGN, SLIDE, LIFT_SPATULA, FLIP_FOOD, DROP_FOOD};
+			task = tasks[taskIndex];
+			if (taskFinished)
+			{
+				taskIndex++;
+				taskFinished = false;
+				cout << "switch to task nunber" << taskIndex << endl;
+			}
+			if (taskIndex == tasks.size())
+			{
+				state = SERVING;
+				cout << "switch to SERVING state" << endl;
+				taskIndex = 0;
+			}
+
+			break;
+		case SERVING:
+			std::vector<int> tasks = {ALIGN, SLIDE, LIFT_SPATULA, DROP_FOOD};
+			task = tasks[taskIndex];
+			if (taskFinished)
+			{
+				taskIndex++;
+				taskFinished = false;
+				cout << "switch to task nunber" << taskIndex << endl;
+			}
+			if (taskIndex == tasks.size())
+			{
+				state = default;
+				cout << "Finish" << endl;
+				taskIndex = 0;
+			}
+			break;
+		default:
+			task = IDLE;
+			break;
+		}
+
+		switch (task)
+		{
 		case IDLE:
-			robot->_dq = dq_curr_desired;
+
+			// VectorXd dq_curr_desired = VectorXd::Zero(12);
+			// robot->_dq = dq_curr_desired;
+			q_curr_desired = robot->_q;
 			break;
 		case ALIGN:
-			// If(task is to align){
-			// moving to the chopping board area
-			// align the spatula to the object[grill_index]
-			// if (position and ori reached){change task to slide}
-			// }
-			if (time > 2.0)
+			// move to cutting board
+			q_curr_desired(0) = 0.42;
+			joint_task->_use_velocity_saturation_flag = true;
+			joint_task->_saturation_velocity(0) = 0.2;
+
+			// align the spatula with the objects
+			posori_task->reInitializeTask();
+			Vector3d r_food = stack_foods[stack_idx];
+			Vector3d robot_offset = Vector3d(0.0, -0.05, 0.3514);
+			r_align = r_food - robot_offset;
+			posori_task->_desired_position = r_align;
+			// cout << robot->_q(0) << endl;
+			// cout << q_curr_desired(0) << endl;
+			if ((robot->_q - q_curr_desired).norm() < 0.05)
 			{
-				cout << "swich to Align" << endl;
-				q_curr_desired(0) = -0.3514; // move to cutting board
-				joint_task->_use_velocity_saturation_flag = true;
-				joint_task->_saturation_velocity(0) = 0.2;
-				state = IDLE;
+				cout << "swich to IDLE" << endl;
+				taskFinished = TRUE;
+				// state = SLIDE;
 			}
+			break;
+		case SLIDE:
+			break;
+		case LIFT_SPATULA:
 			break;
 		case STACKING:
 			// set velocity to zero
@@ -391,14 +463,16 @@ int main()
 		case RESET:
 			break;
 		}
+
 		joint_task->_desired_position = q_curr_desired;
 		// compute torques
 		joint_task->computeTorques(joint_task_torques);
-		command_torques = joint_task_torques;
-		if ((robot->_q - q_curr_desired).norm() < 0.05)
-		{
-			state = IDLE;
-		}
+
+		posori_task->computeTorques(posori_task_torques);
+
+		command_torques = posori_task_torques + joint_task_torques;
+		// cout << command_torques(0) << endl;
+		// command_torques = posori_task_torques + joint_task_torques;
 
 		redis_client.setEigenMatrixJSON(JOINT_TORQUES_COMMANDED_KEY, command_torques);
 
