@@ -296,7 +296,7 @@ int main()
 			0.0000000, cos(slide_angle), -sin(slide_angle),
 			0.0000000, sin(slide_angle), cos(slide_angle);
 
-	slide_ori *= good_ee_rot;
+	// slide_ori *= good_ee_rot;
 
 	double y_slide = 0.44; // based off of backstop location and thickness
 
@@ -307,7 +307,7 @@ int main()
 	lift_ori << 1.0000000, 0.0000000, 0.0000000,
 			0.0000000, cos(lift_angle), -sin(lift_angle),
 			0.0000000, sin(lift_angle), cos(lift_angle);
-	lift_ori *= good_ee_rot;
+	// lift_ori *= good_ee_rot;
 	// Vector3d lift_height;
 	// lift_height << 0.0, 0.05, 0.25;
 	double z_lift = 0.6;
@@ -461,9 +461,6 @@ int main()
 			Vector3d r_align = r_food - robot_offset;
 			// Vector3d r_align = r_food;
 			posori_task->_desired_position = r_align;
-			// posori_task->_desired_orientation = good_ee_rot;
-			// cout << robot->_q(0) << endl;
-			// cout << q_curr_desired(0) << endl;
 			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
 			{
 				// cout << "swich to IDLE" << endl;
