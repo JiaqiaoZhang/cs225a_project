@@ -188,9 +188,10 @@
       </geometry>
     </visual>
     <visual>
-      <origin xyz="0 -0.2 0.217" rpy="0 0 -0.78539816339" />
+      <!-- <origin xyz="0 0.11 0.203" rpy="0 0 -0.78539816339" /> -->
+      <origin xyz="0 -0.11 0.203" rpy="0 0 -0.78539816339" /> 
       <geometry>
-        <sphere radius = "0.01"/>
+        <sphere radius = "0.01"/>  
       </geometry>
       <material name="red">
       <color rgba="1 0 0 1"/>
