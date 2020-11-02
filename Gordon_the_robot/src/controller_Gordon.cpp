@@ -454,7 +454,7 @@ int main()
 			}
 			joint_task->_desired_position = q_curr_desired;
 			// compute torques
-			joint_task->computeTorques(joint_task_torques);
+			
 		}
 		break;
 		case ALIGN:
@@ -478,12 +478,31 @@ int main()
 			posori_task->updateTaskModel(N_prec);
 			N_prec = posori_task->_N;
 			joint_task->updateTaskModel(N_prec);
-			posori_task->computeTorques(posori_task_torques);
-			joint_task->computeTorques(joint_task_torques);
+			
 		}
 		break;
 		case SLIDE:
-			break;
+		{
+			posori_task->reInitializeTask();
+			posori_task->_use_velocity_saturation_flag = true;
+			posori_task->_linear_saturation_velocity = 0.3;
+			posori_task->_desired_position(1) = y_slide;
+			// posori_task->_desired_orientation = slide_ori;
+
+			N_prec.setIdentity();
+			posori_task->updateTaskModel(N_prec);
+			N_prec = posori_task->_N;
+			joint_task->updateTaskModel(N_prec);
+			
+			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
+			{
+				cout << "SLIDE Finished" << endl;
+				taskFinished = true;
+				// state = SLIDE;
+			}
+
+		}
+		break;
 		case LIFT_SPATULA:
 			break;
 		case STACKING:
@@ -502,7 +521,8 @@ int main()
 		}
 
 		
-
+		posori_task->computeTorques(posori_task_torques);
+		joint_task->computeTorques(joint_task_torques);
 		
 
 		command_torques = posori_task_torques + joint_task_torques;
