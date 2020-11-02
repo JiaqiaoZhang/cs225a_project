@@ -363,25 +363,26 @@ int main()
 		joint_task->updateTaskModel(N_prec);
 		joint_task->_use_velocity_saturation_flag = false;
 
-		posori_task->updateTaskModel(N_prec);
+		
 		switch (state)
 		{
 		case STACKING:
 		{
 			/* code */
 			std::vector<int> tasks = {MOVE_TO_BOARD, ALIGN, SLIDE, LIFT_SPATULA, DROP_FOOD};
-			task = tasks[taskIndex];
 			if (taskFinished)
 			{
 				taskIndex++;
 				taskFinished = false;
 				cout << "switch to task nunber" << taskIndex << endl;
 			}
+			task = tasks[taskIndex];
 			if (taskIndex == tasks.size())
 			{
 				state = FLIPPING;
 				cout << "switch to FLIPPING state" << endl;
 				taskIndex = 0;
+				continue;
 			}
 		}
 		break;
@@ -450,6 +451,9 @@ int main()
 				taskFinished = true;
 				// state = SLIDE;
 			}
+			joint_task->_desired_position = q_curr_desired;
+			// compute torques
+			joint_task->computeTorques(joint_task_torques);
 		}
 		break;
 		case ALIGN:
@@ -463,10 +467,16 @@ int main()
 			posori_task->_desired_position = r_align;
 			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
 			{
-				// cout << "swich to IDLE" << endl;
+				cout << "ALIGN Finished" << endl;
 				taskFinished = true;
 				// state = SLIDE;
 			}
+			N_prec.setIdentity();
+			posori_task->updateTaskModel(N_prec);
+			N_prec = posori_task->_N;
+			joint_task->updateTaskModel(N_prec);
+			posori_task->computeTorques(posori_task_torques);
+			joint_task->computeTorques(joint_task_torques);
 		}
 		break;
 		case SLIDE:
@@ -488,11 +498,9 @@ int main()
 			break;
 		}
 
-		joint_task->_desired_position = q_curr_desired;
-		// compute torques
-		joint_task->computeTorques(joint_task_torques);
+		
 
-		posori_task->computeTorques(posori_task_torques);
+		
 
 		command_torques = posori_task_torques + joint_task_torques;
 		// cout << command_torques(0) << endl;
