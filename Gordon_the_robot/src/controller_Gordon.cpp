@@ -359,9 +359,7 @@ int main()
 		Matrix3d spatula_rot;
 		robot->rotationInWorld(spatula_rot, control_link);
 		// cout << state << endl;
-		N_prec.setIdentity();
-		joint_task->updateTaskModel(N_prec);
-		joint_task->_use_velocity_saturation_flag = false;
+		
 
 		
 		switch (state)
@@ -441,6 +439,9 @@ int main()
 		break;
 		case MOVE_TO_BOARD:
 		{
+			N_prec.setIdentity();
+			joint_task->updateTaskModel(N_prec);
+			joint_task->_use_velocity_saturation_flag = false;
 			q_curr_desired(0) = 0.42;
 			// q_curr_desired(9) = -M_PI;/
 			joint_task->_use_velocity_saturation_flag = true;
@@ -459,6 +460,8 @@ int main()
 		case ALIGN:
 		{
 			// align the spatula with the objects
+			joint_task->reInitializeTask();
+			joint_task->_kp = 0;
 			posori_task->reInitializeTask();
 			Vector3d r_food = stack_foods[stack_idx];
 			Vector3d robot_offset = Vector3d(0.1, 0.15, 0.3514);
