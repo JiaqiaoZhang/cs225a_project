@@ -298,7 +298,7 @@ int main()
 
 	// slide_ori *= good_ee_rot;
 
-	double y_slide = 0.64; // based off of backstop location and thickness
+	double y_slide = 0.44; // based off of backstop location and thickness
 
 	Matrix3d lift_ori;
 	double lift_angle = 20 * M_PI / 180.0;
