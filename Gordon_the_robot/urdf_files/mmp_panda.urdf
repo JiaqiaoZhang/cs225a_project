@@ -200,7 +200,7 @@
      <collision>
       <origin xyz="0 0 0.107" rpy="0 0 3.14"/>
       <geometry>
-        <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/collision/Spatula.obj"/>
+        <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/collision/SpatulaBaseAndCenter.obj"/>
       </geometry>
     </collision>
   </link>
