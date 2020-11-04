@@ -283,15 +283,18 @@ int main()
 	bool fTimerDidSleep = true;
 
 	Matrix3d good_ee_rot; //
-	good_ee_rot << 0.703586, -0.710608, -0.0017762,
-			-0.337309, -0.336174, 0.879324,
-			-0.625451, -0.618081, -0.476221;
+	// good_ee_rot << 0.703586, -0.710608, -0.0017762,
+	// 		-0.337309, -0.336174, 0.879324,
+	// 		-0.625451, -0.618081, -0.476221;
+	good_ee_rot << 1, 0, 0,
+			0, -1, 0,
+			0, 0, -1;
 
 	Vector3d slide;
 	slide << 0.0, 0.25, 0.0;
 	// slide << 0.0, 0.28, 0.02;
 	Matrix3d slide_ori;
-	double slide_angle = -6 * M_PI / 180.0;
+	double slide_angle = (180-6) * M_PI / 180.0;  // 180 degrees is the starting position, instead of 0.
 	slide_ori << 1.0000000, 0.0000000, 0.0000000,
 			0.0000000, cos(slide_angle), -sin(slide_angle),
 			0.0000000, sin(slide_angle), cos(slide_angle);
@@ -301,7 +304,7 @@ int main()
 	double y_slide = 0.54; // based off of backstop location and thickness
 
 	Matrix3d lift_ori;
-	double lift_angle = 1 * M_PI / 180.0;
+	double lift_angle = (180) * M_PI / 180.0;
 	// double lift_angle = 6 * M_PI / 180.0;
 
 	lift_ori << 1.0000000, 0.0000000, 0.0000000,
@@ -471,6 +474,7 @@ int main()
 			Vector3d r_align = r_food - robot_offset;
 			// Vector3d r_align = r_food;
 			posori_task->_desired_position = r_align;
+			posori_task->_desired_orientation = good_ee_rot;
 			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
 			{
 				cout << "ALIGN Finished" << endl;
@@ -488,7 +492,7 @@ int main()
 			posori_task->reInitializeTask();
 
 			posori_task->_desired_position(1) = y_slide;
-			// posori_task->_desired_orientation = slide_ori;
+			posori_task->_desired_orientation = slide_ori;
 
 			N_prec.setIdentity();
 			posori_task->updateTaskModel(N_prec);
@@ -508,7 +512,7 @@ int main()
 			posori_task->reInitializeTask();
 
 			posori_task->_desired_position(2) = z_lift;
-			// posori_task->_desired_orientation = lift_ori;
+			posori_task->_desired_orientation = lift_ori;
 
 			N_prec.setIdentity();
 			posori_task->updateTaskModel(N_prec);
