@@ -298,10 +298,10 @@ int main()
 
 	// slide_ori *= good_ee_rot;
 
-	double y_slide = 0.64; // based off of backstop location and thickness
+	double y_slide = 0.54; // based off of backstop location and thickness
 
 	Matrix3d lift_ori;
-	double lift_angle = 20 * M_PI / 180.0;
+	double lift_angle = 1 * M_PI / 180.0;
 	// double lift_angle = 6 * M_PI / 180.0;
 
 	lift_ori << 1.0000000, 0.0000000, 0.0000000,
@@ -332,6 +332,9 @@ int main()
 	double y_offset_tip = 0.051; // according to onshape - distance between spatula origin and front of spatula base
 	bool taskFinished = false;
 	int taskIndex = 0;
+
+	posori_task->_use_interpolation_flag = true;
+	posori_task->_use_velocity_saturation_flag = false;
 	while (runloop)
 	{
 		timer.waitForNextLoop();
@@ -359,9 +362,7 @@ int main()
 		Matrix3d spatula_rot;
 		robot->rotationInWorld(spatula_rot, control_link);
 		// cout << state << endl;
-		
 
-		
 		switch (state)
 		{
 		case STACKING:
@@ -454,7 +455,6 @@ int main()
 			}
 			joint_task->_desired_position = q_curr_desired;
 			// compute torques
-			
 		}
 		break;
 		case ALIGN:
@@ -462,7 +462,10 @@ int main()
 			// align the spatula with the objects
 			joint_task->reInitializeTask();
 			joint_task->_kp = 0;
+
 			posori_task->reInitializeTask();
+			posori_task->_otg->setMaxLinearVelocity(0.8);
+			posori_task->_otg->setMaxAngularVelocity(M_PI / 2);
 			Vector3d r_food = stack_foods[stack_idx];
 			Vector3d robot_offset = Vector3d(0.1, 0.15, 0.3514);
 			Vector3d r_align = r_food - robot_offset;
@@ -478,14 +481,12 @@ int main()
 			posori_task->updateTaskModel(N_prec);
 			N_prec = posori_task->_N;
 			joint_task->updateTaskModel(N_prec);
-			
 		}
 		break;
 		case SLIDE:
 		{
 			posori_task->reInitializeTask();
-			posori_task->_use_velocity_saturation_flag = true;
-			posori_task->_linear_saturation_velocity = 0.3;
+
 			posori_task->_desired_position(1) = y_slide;
 			// posori_task->_desired_orientation = slide_ori;
 
@@ -493,18 +494,35 @@ int main()
 			posori_task->updateTaskModel(N_prec);
 			N_prec = posori_task->_N;
 			joint_task->updateTaskModel(N_prec);
-			
+
 			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
 			{
 				cout << "SLIDE Finished" << endl;
 				taskFinished = true;
-				state = -1;
+				// state = -1;
 				continue;
 			}
-
 		}
 		break;
 		case LIFT_SPATULA:
+			posori_task->reInitializeTask();
+
+			posori_task->_desired_position(2) = z_lift;
+			// posori_task->_desired_orientation = lift_ori;
+
+			N_prec.setIdentity();
+			posori_task->updateTaskModel(N_prec);
+			N_prec = posori_task->_N;
+
+			joint_task->updateTaskModel(N_prec);
+
+			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
+			{
+				cout << "LIFT Finished" << endl;
+				taskFinished = true;
+				state = -1;
+				continue;
+			}
 			break;
 		case STACKING:
 			// set velocity to zero
@@ -521,10 +539,8 @@ int main()
 			break;
 		}
 
-		
 		posori_task->computeTorques(posori_task_torques);
 		joint_task->computeTorques(joint_task_torques);
-		
 
 		command_torques = posori_task_torques + joint_task_torques;
 		// cout << command_torques(0) << endl;
