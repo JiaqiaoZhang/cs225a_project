@@ -117,6 +117,7 @@ Change task to reset
 #define RESET_TASK 6
 #define MOVE_TO_BOARD 12
 #define MOVE_TO_GRILL 13
+
 // states
 #define STACKING 7
 #define FLIPPING 8
@@ -278,7 +279,8 @@ int main()
 	// create a timer
 	LoopTimer timer;
 	timer.initializeTimer();
-	timer.setLoopFrequency(1000);
+	// timer.setLoopFrequency(1000);
+	timer.setLoopFrequency(200);
 	double start_time = timer.elapsedTime(); //secs
 	bool fTimerDidSleep = true;
 
@@ -294,7 +296,7 @@ int main()
 	slide << 0.0, 0.25, 0.0;
 	// slide << 0.0, 0.28, 0.02;
 	Matrix3d slide_ori;
-	double slide_angle = (180-6) * M_PI / 180.0;  // 180 degrees is the starting position, instead of 0.
+	double slide_angle = (180 - 6) * M_PI / 180.0; // 180 degrees is the starting position, instead of 0.
 	slide_ori << 1.0000000, 0.0000000, 0.0000000,
 			0.0000000, cos(slide_angle), -sin(slide_angle),
 			0.0000000, sin(slide_angle), cos(slide_angle);
@@ -371,7 +373,7 @@ int main()
 		case STACKING:
 		{
 			/* code */
-			std::vector<int> tasks = {MOVE_TO_BOARD, ALIGN, SLIDE, LIFT_SPATULA, DROP_FOOD};
+			std::vector<int> tasks = {MOVE_TO_BOARD, ALIGN, SLIDE, LIFT_SPATULA, MOVE_TO_GRILL, DROP_FOOD};
 			if (taskFinished)
 			{
 				taskIndex++;
@@ -524,14 +526,32 @@ int main()
 			{
 				cout << "LIFT Finished" << endl;
 				taskFinished = true;
-				state = -1;
+				// state = -1;
 				continue;
 			}
 			break;
-		case STACKING:
+		case MOVE_TO_GRILL:
 			// set velocity to zero
+			joint_task->reInitializeTask();
+			posori_task->reInitializeTask();
+			N_prec.setIdentity();
+			joint_task->updateTaskModel(N_prec);
+			joint_task->_use_velocity_saturation_flag = false;
+			q_curr_desired(0) = 0;
+			// q_curr_desired(9) = -M_PI;/
+			joint_task->_use_velocity_saturation_flag = true;
+			joint_task->_saturation_velocity(0) = 0.2;
+			if ((robot->_q - q_curr_desired).norm() < 0.05)
+			{
+				cout << "Move to Grill finished" << endl;
+				taskFinished = true;
+				// state = SLIDE;
+				state = -1;
+			}
+			joint_task->_desired_position = q_curr_desired;
+			// compute torques
 			break;
-		case FLIPPING:
+		case DROP_FOOD:
 			// align the
 			break;
 		case SERVING:
