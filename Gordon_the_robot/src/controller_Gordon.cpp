@@ -317,8 +317,16 @@ int main()
 	// Vector3d lift_height;
 	// lift_height << 0.0, 0.05, 0.25;
 	double z_lift = 0.4;
+
 	Vector3d drop_food;
 	drop_food << 0.1, 0.7, 0.25;
+
+	Vector3d des_vel;
+	des_vel << 0.2, 0.2, 0.2;
+
+	Vector3d reset_pos;
+	reset_pos << 0.1, 0.2, 0.5;
+
 	Matrix3d relax_ori;
 	double relax_angle = (180 - 60) * M_PI / 180.0;
 	// relax_ori = lift_ori.transpose();
@@ -374,12 +382,18 @@ int main()
 		case STACKING:
 		{
 			/* code */
-			std::vector<int> tasks = {MOVE_TO_BOARD, ALIGN, SLIDE, LIFT_SPATULA, MOVE_TO_GRILL, DROP_FOOD};
-			
+			std::vector<int> tasks = {RESET_TASK, MOVE_TO_BOARD, ALIGN, SLIDE, LIFT_SPATULA, MOVE_TO_GRILL, DROP_FOOD};
+
 			if (taskFinished)
 			{
 				taskIndex++;
 				taskFinished = false;
+				if (taskIndex == tasks.size() && stack_idx < 3)
+				{
+					stack_idx++;
+					taskIndex = 0;
+					cout << "pick another food" << endl;
+				}
 				cout << "switch to task nunber" << taskIndex << endl;
 			}
 			if (taskIndex == tasks.size() && stack_idx == 3)
@@ -390,15 +404,8 @@ int main()
 				stack_idx = 0;
 				continue;
 			}
-			if (taskIndex == tasks.size())
-			{
-				stack_idx++;
-				taskIndex = 0;
-			}
-			
+
 			task = tasks[taskIndex];
-			
-			
 		}
 		break;
 		case FLIPPING:
@@ -454,13 +461,34 @@ int main()
 			q_curr_desired = robot->_q;
 		}
 		break;
+		case RESET_TASK:
+		{
+			posori_task->reInitializeTask();
+			// posori_task->_desired_position = reset_pos;
+			joint_task->reInitializeTask();
+			// q_curr_desired(0) = 0.42;
+			joint_task->_desired_position = initial_q;
+			if ((robot->_q - initial_q).norm() < 0.05)
+			{
+				cout << "Reset Finished" << endl;
+				taskFinished = true;
+				// state = SLIDE;
+			}
+			// joint_task->_desired_position = q_curr_desired;
+			N_prec.setIdentity();
+			joint_task->updateTaskModel(N_prec);
+		}
+		break;
 		case MOVE_TO_BOARD:
 		{
+			posori_task->reInitializeTask();
+			joint_task->reInitializeTask();
+
 			N_prec.setIdentity();
 			joint_task->updateTaskModel(N_prec);
 			joint_task->_use_velocity_saturation_flag = false;
 			q_curr_desired(0) = 0.42;
-			// q_curr_desired(9) = -M_PI;/
+
 			joint_task->_use_velocity_saturation_flag = true;
 			joint_task->_saturation_velocity(0) = 0.2;
 			if ((robot->_q - q_curr_desired).norm() < 0.05)
@@ -482,6 +510,8 @@ int main()
 			posori_task->reInitializeTask();
 			posori_task->_otg->setMaxLinearVelocity(0.8);
 			posori_task->_otg->setMaxAngularVelocity(M_PI / 2);
+			// posori_task->_desired_velocity = des_vel;
+			// posori_task->_desired_angular_velocity = des_vel;
 			Vector3d r_food = stack_foods[stack_idx];
 			Vector3d robot_offset = Vector3d(0.1, 0.15, 0.3514);
 			Vector3d r_align = r_food - robot_offset;
@@ -563,8 +593,8 @@ int main()
 			joint_task->_desired_position = q_curr_desired;
 			// compute torques
 			break;
-		
-		break;
+
+			break;
 		case DROP_FOOD:
 			// drop the food to the grill
 			posori_task->reInitializeTask();
@@ -587,8 +617,6 @@ int main()
 			}
 			break;
 		case SERVING:
-			break;
-		case RESET_TASK:
 			break;
 		default:
 			// task = IDLE;
