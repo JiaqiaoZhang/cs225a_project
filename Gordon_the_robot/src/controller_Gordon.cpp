@@ -315,16 +315,16 @@ int main()
 	// lift_ori *= good_ee_rot;
 	// Vector3d lift_height;
 	// lift_height << 0.0, 0.05, 0.25;
-	double z_lift = 0.6;
+	double z_lift = 0.5;
 	Vector3d drop_food;
 	drop_food << 0.0, 0.25, 0.53;
 	Matrix3d relax_ori;
-	double relax_angle = -30 * M_PI / 180.0;
+	double relax_angle = (180 - 60) * M_PI / 180.0;
 	// relax_ori = lift_ori.transpose();
 	relax_ori << 1.0000000, 0.0000000, 0.0000000,
 			0.0000000, cos(relax_angle), -sin(relax_angle),
 			0.0000000, sin(relax_angle), cos(relax_angle);
-	relax_ori *= good_ee_rot;
+	// relax_ori *= good_ee_rot;
 
 	Matrix3d flex_ori;
 	// double flex_angle = 0 * M_PI / 180.0;
@@ -381,12 +381,18 @@ int main()
 				cout << "switch to task nunber" << taskIndex << endl;
 			}
 			task = tasks[taskIndex];
-			if (taskIndex == tasks.size())
+			if (taskIndex == tasks.size() && stack_idx == 3)
 			{
 				state = FLIPPING;
 				cout << "switch to FLIPPING state" << endl;
 				taskIndex = 0;
+				stack_idx = 0;
 				continue;
+			}
+			if (taskIndex == tasks.size())
+			{
+				stack_idx++;
+				taskIndex = 0;
 			}
 		}
 		break;
@@ -454,7 +460,7 @@ int main()
 			joint_task->_saturation_velocity(0) = 0.2;
 			if ((robot->_q - q_curr_desired).norm() < 0.05)
 			{
-				// cout << "swich to IDLE" << endl;
+				cout << "Move to Board Finished" << endl;
 				taskFinished = true;
 				// state = SLIDE;
 			}
@@ -546,13 +552,31 @@ int main()
 				cout << "Move to Grill finished" << endl;
 				taskFinished = true;
 				// state = SLIDE;
-				state = -1;
+				// state = -1;
 			}
 			joint_task->_desired_position = q_curr_desired;
 			// compute torques
 			break;
 		case DROP_FOOD:
-			// align the
+			// drop the food to the grill
+			posori_task->reInitializeTask();
+			// posori_task->_desired_position(1) = y_slide + 0.1;
+			posori_task->_desired_position(2) = z_lift - 0.1;
+			posori_task->_desired_orientation = relax_ori;
+
+			N_prec.setIdentity();
+			posori_task->updateTaskModel(N_prec);
+			N_prec = posori_task->_N;
+
+			joint_task->updateTaskModel(N_prec);
+
+			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
+			{
+				cout << "Drop Food Finished" << endl;
+				taskFinished = true;
+				state = -1;
+				continue;
+			}
 			break;
 		case SERVING:
 			break;

@@ -415,7 +415,7 @@ void simulation(Sai2Model::Sai2Model *robot,
 	LoopTimer timer;
 	timer.initializeTimer();
 
-	double slow_down_factor = 1;
+	double slow_down_factor = 3;
 	timer.setLoopFrequency(1000);
 	double last_time = timer.elapsedTime() / slow_down_factor; //secs
 	bool fTimerDidSleep = true;
@@ -501,8 +501,8 @@ void simulation(Sai2Model::Sai2Model *robot,
 
 		double curr_time = timer.elapsedTime() / slow_down_factor;
 		double loop_dt = curr_time - last_time;
-		// sim->integrate(loop_dt);
-		sim->integrate(0.001);
+		sim->integrate(loop_dt);
+		// sim->integrate(0.001);
 
 		// read joint positions, velocities, update model
 		sim->getJointPositions(robot_name, robot->_q);
