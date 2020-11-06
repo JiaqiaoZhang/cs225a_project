@@ -117,6 +117,7 @@ Change task to reset
 #define RESET_TASK 6
 #define MOVE_TO_BOARD 12
 #define MOVE_TO_GRILL 13
+#define MOVE_TO_CORNER 14
 
 // states
 #define STACKING 7
@@ -315,9 +316,9 @@ int main()
 	// lift_ori *= good_ee_rot;
 	// Vector3d lift_height;
 	// lift_height << 0.0, 0.05, 0.25;
-	double z_lift = 0.5;
+	double z_lift = 0.4;
 	Vector3d drop_food;
-	drop_food << 0.0, 0.25, 0.53;
+	drop_food << 0.1, 0.7, 0.25;
 	Matrix3d relax_ori;
 	double relax_angle = (180 - 60) * M_PI / 180.0;
 	// relax_ori = lift_ori.transpose();
@@ -374,13 +375,13 @@ int main()
 		{
 			/* code */
 			std::vector<int> tasks = {MOVE_TO_BOARD, ALIGN, SLIDE, LIFT_SPATULA, MOVE_TO_GRILL, DROP_FOOD};
+			
 			if (taskFinished)
 			{
 				taskIndex++;
 				taskFinished = false;
 				cout << "switch to task nunber" << taskIndex << endl;
 			}
-			task = tasks[taskIndex];
 			if (taskIndex == tasks.size() && stack_idx == 3)
 			{
 				state = FLIPPING;
@@ -394,6 +395,10 @@ int main()
 				stack_idx++;
 				taskIndex = 0;
 			}
+			
+			task = tasks[taskIndex];
+			
+			
 		}
 		break;
 		case FLIPPING:
@@ -543,11 +548,12 @@ int main()
 			N_prec.setIdentity();
 			joint_task->updateTaskModel(N_prec);
 			joint_task->_use_velocity_saturation_flag = false;
-			q_curr_desired(0) = 0;
+			q_curr_desired(0) = 0.1;
+			posori_task->_desired_position = drop_food;
 			// q_curr_desired(9) = -M_PI;/
 			joint_task->_use_velocity_saturation_flag = true;
 			joint_task->_saturation_velocity(0) = 0.2;
-			if ((robot->_q - q_curr_desired).norm() < 0.05)
+			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05) && (robot->_q - q_curr_desired).norm() < 0.05)
 			{
 				cout << "Move to Grill finished" << endl;
 				taskFinished = true;
@@ -557,6 +563,8 @@ int main()
 			joint_task->_desired_position = q_curr_desired;
 			// compute torques
 			break;
+		
+		break;
 		case DROP_FOOD:
 			// drop the food to the grill
 			posori_task->reInitializeTask();
@@ -574,7 +582,7 @@ int main()
 			{
 				cout << "Drop Food Finished" << endl;
 				taskFinished = true;
-				state = -1;
+				//state = -1;
 				continue;
 			}
 			break;
