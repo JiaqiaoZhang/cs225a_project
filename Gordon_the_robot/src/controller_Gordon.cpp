@@ -316,10 +316,10 @@ int main()
 	// lift_ori *= good_ee_rot;
 	// Vector3d lift_height;
 	// lift_height << 0.0, 0.05, 0.25;
-	double z_lift = 0.55;
+	double z_lift = 0.5;
 
 	Vector3d drop_food;
-	drop_food << 0.12, 0.68, 0.27;
+	drop_food << 0.12, 0.68, 0.25;
 
 	Vector3d des_vel;
 	des_vel << 0.2, 0.2, 0.2;
@@ -365,10 +365,10 @@ int main()
 		r_burger = redis_client.getEigenMatrixJSON(BURGER_POSITION_KEY);
 
 		//Vector3d stack_foods[] = {r_bottom_bread, r_top_bread, r_burger};
-		Vector3d stack_foods[] = {Vector3d(0.5, 0.5, 0.5),Vector3d(0.7, 0.5, 0.5),Vector3d(0.9, 0.5, 0.5) };
+		Vector3d stack_foods[] = {Vector3d(0.5, 0.5, 0.5),Vector3d(0.9, 0.5, 0.5), Vector3d(0.7, 0.5, 0.5)};
 		
 		
-		Vector3d robot_offset[] = {Vector3d(0, 0.15, 0.37114),Vector3d(0, 0.15, 0.37114), Vector3d(0, 0.15, 0.37114)};
+		Vector3d robot_offset[] = {Vector3d(0, 0.15, 0.37114), Vector3d(0, 0.15, 0.37114),Vector3d(0, 0.15, 0.37114)};
 
 		robot->updateModel();
 
@@ -472,13 +472,16 @@ int main()
 			posori_task->reInitializeTask();
 			// posori_task->_desired_position = reset_pos;
 			joint_task->reInitializeTask();
-			// q_curr_desired(0) = 0.42;
+			//q_curr_desired(8) = M_PI/2;
 			joint_task->_desired_position = initial_q;
+			//joint_task->_desired_position =  q_curr_desired;
+			cout << "robot position: " << robot->_q << endl;
+			//if ((robot->_q - q_curr_desired).norm() < 0.05)
 			if ((robot->_q - initial_q).norm() < 0.05)
 			{
 				cout << "Reset Finished" << endl;
 				taskFinished = true;
-				// state = SLIDE;
+				//state = -1;
 			}
 			// joint_task->_desired_position = q_curr_desired;
 			N_prec.setIdentity();
