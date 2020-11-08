@@ -207,7 +207,7 @@
 		<visual>
 	    	<origin xyz="0 0 0" rpy="0 0 0" />
 	        <geometry>
-	            <mesh filename="./resources/../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/TallGrill.obj" scale="1 1 1"/>
+	            <mesh filename="./resources/../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/GrillCharcoal.obj" scale="1 1 1"/>
 	        </geometry> 
 	        <color rgba="0 0 0 1"/>
 	    </visual>

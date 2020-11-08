@@ -349,6 +349,12 @@ int main()
 
 	posori_task->_use_interpolation_flag = true;
 	posori_task->_use_velocity_saturation_flag = false;
+
+	Vector3d init_spatula_pos;
+	robot->positionInWorld(init_spatula_pos, control_link, control_point);
+	Matrix3d init_spatula_rot;
+	robot->rotationInWorld(init_spatula_rot, control_link);
+
 	while (runloop)
 	{
 		timer.waitForNextLoop();
@@ -364,21 +370,21 @@ int main()
 		r_top_bread = redis_client.getEigenMatrixJSON(TOP_BREAD_POSITION_KEY);
 		r_burger = redis_client.getEigenMatrixJSON(BURGER_POSITION_KEY);
 
-		//Vector3d stack_foods[] = {r_bottom_bread, r_top_bread, r_burger};
-		Vector3d stack_foods[] = {Vector3d(0.5, 0.5, 0.5),Vector3d(0.9, 0.5, 0.5), Vector3d(0.7, 0.5, 0.5)};
+		Vector3d stack_foods[] = {r_bottom_bread, r_burger, r_top_bread};
+		// Vector3d stack_foods[] = {Vector3d(0.5, 0.5, 0.5),Vector3d(0.9, 0.5, 0.5), Vector3d(0.7, 0.5, 0.5)};
 		
 		
-		Vector3d robot_offset[] = {Vector3d(0, 0.15, 0.37114), Vector3d(0, 0.15, 0.37114),Vector3d(0, 0.15, 0.37114)};
+		Vector3d robot_offset[] = {Vector3d(0.1, 0.15, 0.3515), Vector3d(0, 0.15, 0.37114),Vector3d(0, 0.15, 0.37114)};
 
 		robot->updateModel();
 
 		VectorXd q_curr_desired = VectorXd::Zero(10); // container  7 for joints, 3 for mobile base
 		q_curr_desired = robot->_q;
 
-		Vector3d spatula_pos;
-		robot->positionInWorld(spatula_pos, control_link, control_point);
-		Matrix3d spatula_rot;
-		robot->rotationInWorld(spatula_rot, control_link);
+		// Vector3d spatula_pos;
+		// robot->positionInWorld(spatula_pos, control_link, control_point);
+		// Matrix3d spatula_rot;
+		// robot->rotationInWorld(spatula_rot, control_link);
 		// cout << state << endl;
 
 		switch (state)
@@ -393,7 +399,7 @@ int main()
 			{
 				taskIndex++;
 				taskFinished = false;
-				if (taskIndex == tasks.size() && stack_idx < 3)
+				if (taskIndex == tasks.size() && stack_idx < 2)
 				{
 					stack_idx++;
 					//cout << "stack index: " << stack_idx << endl;
@@ -402,7 +408,7 @@ int main()
 				}
 				cout << "switch to task number " << taskIndex << endl;
 			}
-			if (taskIndex == tasks.size() && stack_idx == 3)
+			if (taskIndex == tasks.size() && stack_idx == 2)
 			{
 				state = FLIPPING;
 				cout << "switch to FLIPPING state" << endl;
@@ -470,27 +476,43 @@ int main()
 		case RESET_TASK:
 		{
 			posori_task->reInitializeTask();
-			// posori_task->_desired_position = reset_pos;
-			joint_task->reInitializeTask();
-			//q_curr_desired(8) = M_PI/2;
 			N_prec.setIdentity();
-			joint_task->updateTaskModel(N_prec);
-			
-			joint_task->_desired_position = initial_q;
-			//N_prec = joint_task->_N;
 			posori_task->updateTaskModel(N_prec);
-			//posori_task->_desired_position = reset_pos;
-
-			//joint_task->_desired_position =  q_curr_desired;
-			//cout << "robot position: " << robot->_q << endl;
-			//if ((robot->_q - q_curr_desired).norm() < 0.05)
-			if ((robot->_q - initial_q).norm() < 0.5)
+			N_prec = posori_task->_N;
+			joint_task->updateTaskModel(N_prec);
+			posori_task->_desired_position = init_spatula_pos;
+			posori_task->_desired_orientation = init_spatula_rot;
+			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
 			{
-				cout << "Reset Finished" << endl;
+				cout << "RESET Finished" << endl;
 				taskFinished = true;
-				//state = -1;
+				// state = SLIDE;
 			}
-			// joint_task->_desired_position = q_curr_desired;
+			
+			// posori_task->reInitializeTask();
+			
+			// joint_task->reInitializeTask();
+			// // q_curr_desired(8) = M_PI/2;
+			// N_prec.setIdentity();
+			// posori_task->updateTaskModel(N_prec);
+			// posori_task->_desired_position = reset_pos;
+			// // joint_task->_desired_position = initial_q;
+			// // joint_task->_use_velocity_saturation_flag = false;
+			// //N_prec = joint_task->_N;
+			
+			// // posori_task->_desired_position = reset_pos;
+			// // N_prec = joint_task->_N;
+			// posori_task->updateTaskModel(N_prec);
+			// //joint_task->_desired_position =  q_curr_desired;
+			// //cout << "robot position: " << robot->_q << endl;
+			// //if ((robot->_q - q_curr_desired).norm() < 0.05)
+			// if ((robot->_q - initial_q).norm() < 0.1)
+			// {
+			// 	cout << "Reset Finished" << endl;
+			// 	taskFinished = true;
+			// 	//state = -1;
+			// }
+			// // joint_task->_desired_position = q_curr_desired;
 			
 			
 		}
@@ -503,7 +525,7 @@ int main()
 			N_prec.setIdentity();
 			joint_task->updateTaskModel(N_prec);
 			joint_task->_use_velocity_saturation_flag = false;
-			q_curr_desired(0) = 0.42;
+			q_curr_desired(0) = 0.6;
 
 			joint_task->_use_velocity_saturation_flag = true;
 			joint_task->_saturation_velocity(0) = 0.2;
@@ -520,16 +542,20 @@ int main()
 		case ALIGN:
 		{
 			// align the spatula with the objects
-			joint_task->reInitializeTask();
-			joint_task->_kp = 0;
+			// joint_task->reInitializeTask();
+			// joint_task->_kp = 0;
 
 			posori_task->reInitializeTask();
-			posori_task->_otg->setMaxLinearVelocity(0.8);
-			posori_task->_otg->setMaxAngularVelocity(M_PI / 2);
+			// posori_task->_otg->setMaxLinearVelocity(0.8);
+			// posori_task->_otg->setMaxAngularVelocity(M_PI / 2);
 			// posori_task->_desired_velocity = des_vel;
 			// posori_task->_desired_angular_velocity = des_vel;
 			//cout << "stack_index:\n\r" << stack_idx << endl;
 			Vector3d r_food = stack_foods[stack_idx];
+			if(controller_counter %100 == 0){
+				cout << "r_food position"<<r_food << endl;
+			}
+			
 			//cout << "r_food:\n\r" << r_food << endl; //0.6 0.5 0.48
 			//cout << "pos_spatula: " << spatula_pos << endl;
 
@@ -601,6 +627,7 @@ int main()
 			joint_task->_use_velocity_saturation_flag = false;
 			q_curr_desired(0) = 0.1;
 			posori_task->_desired_position = drop_food;
+			posori_task->_desired_orientation = lift_ori;
 			// q_curr_desired(9) = -M_PI;/
 			joint_task->_use_velocity_saturation_flag = true;
 			joint_task->_saturation_velocity(0) = 0.2;
