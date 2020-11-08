@@ -473,19 +473,26 @@ int main()
 			// posori_task->_desired_position = reset_pos;
 			joint_task->reInitializeTask();
 			//q_curr_desired(8) = M_PI/2;
+			N_prec.setIdentity();
+			joint_task->updateTaskModel(N_prec);
+			
 			joint_task->_desired_position = initial_q;
+			//N_prec = joint_task->_N;
+			posori_task->updateTaskModel(N_prec);
+			//posori_task->_desired_position = reset_pos;
+
 			//joint_task->_desired_position =  q_curr_desired;
-			cout << "robot position: " << robot->_q << endl;
+			//cout << "robot position: " << robot->_q << endl;
 			//if ((robot->_q - q_curr_desired).norm() < 0.05)
-			if ((robot->_q - initial_q).norm() < 0.05)
+			if ((robot->_q - initial_q).norm() < 0.5)
 			{
 				cout << "Reset Finished" << endl;
 				taskFinished = true;
 				//state = -1;
 			}
 			// joint_task->_desired_position = q_curr_desired;
-			N_prec.setIdentity();
-			joint_task->updateTaskModel(N_prec);
+			
+			
 		}
 		break;
 		case MOVE_TO_BOARD:
@@ -521,9 +528,9 @@ int main()
 			posori_task->_otg->setMaxAngularVelocity(M_PI / 2);
 			// posori_task->_desired_velocity = des_vel;
 			// posori_task->_desired_angular_velocity = des_vel;
-			cout << "stack_index:\n\r" << stack_idx << endl;
+			//cout << "stack_index:\n\r" << stack_idx << endl;
 			Vector3d r_food = stack_foods[stack_idx];
-			cout << "r_food:\n\r" << r_food << endl; //0.6 0.5 0.48
+			//cout << "r_food:\n\r" << r_food << endl; //0.6 0.5 0.48
 			//cout << "pos_spatula: " << spatula_pos << endl;
 
 			//Vector3d robot_offset = Vector3d(0.1, 0.15, 0.3514); // where did this number come from
@@ -585,7 +592,7 @@ int main()
 			}
 			break;
 		case MOVE_TO_GRILL:
-			cout << "pos_spatula: " << spatula_pos << endl;
+			//cout << "pos_spatula: " << spatula_pos << endl;
 			// set velocity to zero
 			joint_task->reInitializeTask();
 			posori_task->reInitializeTask();
