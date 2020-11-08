@@ -316,10 +316,10 @@ int main()
 	// lift_ori *= good_ee_rot;
 	// Vector3d lift_height;
 	// lift_height << 0.0, 0.05, 0.25;
-	double z_lift = 0.4;
+	double z_lift = 0.55;
 
 	Vector3d drop_food;
-	drop_food << 0.1, 0.7, 0.25;
+	drop_food << 0.12, 0.68, 0.27;
 
 	Vector3d des_vel;
 	des_vel << 0.2, 0.2, 0.2;
@@ -364,7 +364,11 @@ int main()
 		r_top_bread = redis_client.getEigenMatrixJSON(TOP_BREAD_POSITION_KEY);
 		r_burger = redis_client.getEigenMatrixJSON(BURGER_POSITION_KEY);
 
-		Vector3d stack_foods[] = {r_bottom_bread, r_burger, r_top_bread};
+		//Vector3d stack_foods[] = {r_bottom_bread, r_top_bread, r_burger};
+		Vector3d stack_foods[] = {Vector3d(0.5, 0.5, 0.5),Vector3d(0.7, 0.5, 0.5),Vector3d(0.9, 0.5, 0.5) };
+		
+		
+		Vector3d robot_offset[] = {Vector3d(0, 0.15, 0.37114),Vector3d(0, 0.15, 0.37114), Vector3d(0, 0.15, 0.37114)};
 
 		robot->updateModel();
 
@@ -383,6 +387,7 @@ int main()
 		{
 			/* code */
 			std::vector<int> tasks = {RESET_TASK, MOVE_TO_BOARD, ALIGN, SLIDE, LIFT_SPATULA, MOVE_TO_GRILL, DROP_FOOD};
+			//std::vector<int> tasks = {MOVE_TO_BOARD, ALIGN, SLIDE, LIFT_SPATULA, MOVE_TO_GRILL, DROP_FOOD};
 
 			if (taskFinished)
 			{
@@ -391,10 +396,11 @@ int main()
 				if (taskIndex == tasks.size() && stack_idx < 3)
 				{
 					stack_idx++;
+					//cout << "stack index: " << stack_idx << endl;
 					taskIndex = 0;
 					cout << "pick another food" << endl;
 				}
-				cout << "switch to task nunber" << taskIndex << endl;
+				cout << "switch to task number " << taskIndex << endl;
 			}
 			if (taskIndex == tasks.size() && stack_idx == 3)
 			{
@@ -416,7 +422,7 @@ int main()
 			{
 				taskIndex++;
 				taskFinished = false;
-				cout << "switch to task nunber" << taskIndex << endl;
+				cout << "switch to task number " << taskIndex << endl;
 			}
 			if (taskIndex == tasks.size())
 			{
@@ -434,7 +440,7 @@ int main()
 			{
 				taskIndex++;
 				taskFinished = false;
-				cout << "switch to task nunber" << taskIndex << endl;
+				cout << "switch to task number " << taskIndex << endl;
 			}
 			if (taskIndex == tasks.size())
 			{
@@ -512,10 +518,14 @@ int main()
 			posori_task->_otg->setMaxAngularVelocity(M_PI / 2);
 			// posori_task->_desired_velocity = des_vel;
 			// posori_task->_desired_angular_velocity = des_vel;
+			cout << "stack_index:\n\r" << stack_idx << endl;
 			Vector3d r_food = stack_foods[stack_idx];
-			Vector3d robot_offset = Vector3d(0.1, 0.15, 0.3514);
-			Vector3d r_align = r_food - robot_offset;
-			// Vector3d r_align = r_food;
+			cout << "r_food:\n\r" << r_food << endl; //0.6 0.5 0.48
+			//cout << "pos_spatula: " << spatula_pos << endl;
+
+			//Vector3d robot_offset = Vector3d(0.1, 0.15, 0.3514); // where did this number come from
+			Vector3d r_align = r_food - robot_offset[stack_idx];
+			//Vector3d r_align = r_food;
 			posori_task->_desired_position = r_align;
 			posori_task->_desired_orientation = good_ee_rot;
 			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
@@ -572,6 +582,7 @@ int main()
 			}
 			break;
 		case MOVE_TO_GRILL:
+			cout << "pos_spatula: " << spatula_pos << endl;
 			// set velocity to zero
 			joint_task->reInitializeTask();
 			posori_task->reInitializeTask();
