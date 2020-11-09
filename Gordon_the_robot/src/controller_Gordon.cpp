@@ -319,7 +319,7 @@ int main()
 	double z_lift = 0.5;
 
 	Vector3d drop_food;
-	drop_food << 0.12, 0.68, 0.25;
+	drop_food << 0.12, 0.70, 0.50;
 
 	Vector3d des_vel;
 	des_vel << 0.2, 0.2, 0.2;
@@ -328,7 +328,7 @@ int main()
 	reset_pos << 0.1, 0.2, 0.5;
 
 	Matrix3d relax_ori;
-	double relax_angle = (180 - 60) * M_PI / 180.0;
+	double relax_angle = (180 - 70) * M_PI / 180.0;
 	// relax_ori = lift_ori.transpose();
 	relax_ori << 1.0000000, 0.0000000, 0.0000000,
 			0.0000000, cos(relax_angle), -sin(relax_angle),
@@ -370,11 +370,11 @@ int main()
 		r_top_bread = redis_client.getEigenMatrixJSON(TOP_BREAD_POSITION_KEY);
 		r_burger = redis_client.getEigenMatrixJSON(BURGER_POSITION_KEY);
 
-		Vector3d stack_foods[] = {r_bottom_bread, r_burger, r_top_bread};
-		// Vector3d stack_foods[] = {Vector3d(0.5, 0.5, 0.5),Vector3d(0.9, 0.5, 0.5), Vector3d(0.7, 0.5, 0.5)};
+		//Vector3d stack_foods[] = {r_bottom_bread, r_burger, r_top_bread};
+		Vector3d stack_foods[] = {Vector3d(0.5, 0.5, 0.5),Vector3d(0.9, 0.5, 0.5), Vector3d(0.7, 0.5, 0.5)};
 		
 		
-		Vector3d robot_offset[] = {Vector3d(0.1, 0.15, 0.3515), Vector3d(0, 0.15, 0.37114),Vector3d(0, 0.15, 0.37114)};
+		Vector3d robot_offset[] = {Vector3d(0, 0.15,0.37114), Vector3d(0, 0.15, 0.37114),Vector3d(0, 0.15, 0.37114)};
 
 		robot->updateModel();
 
@@ -422,7 +422,7 @@ int main()
 		break;
 		case FLIPPING:
 		{
-			std::vector<int> tasks = {ALIGN, SLIDE, LIFT_SPATULA, FLIP_FOOD, DROP_FOOD};
+			std::vector<int> tasks = {RESET_TASK, ALIGN, SLIDE, LIFT_SPATULA, FLIP_FOOD, DROP_FOOD};
 			task = tasks[taskIndex];
 			if (taskFinished)
 			{
@@ -525,8 +525,8 @@ int main()
 			N_prec.setIdentity();
 			joint_task->updateTaskModel(N_prec);
 			joint_task->_use_velocity_saturation_flag = false;
-			q_curr_desired(0) = 0.6;
-
+			q_curr_desired(0) = 0.55;
+			q_curr_desired(1) = -0.2;
 			joint_task->_use_velocity_saturation_flag = true;
 			joint_task->_saturation_velocity(0) = 0.2;
 			if ((robot->_q - q_curr_desired).norm() < 0.05)
@@ -626,6 +626,7 @@ int main()
 			joint_task->updateTaskModel(N_prec);
 			joint_task->_use_velocity_saturation_flag = false;
 			q_curr_desired(0) = 0.1;
+			q_curr_desired(1) = 0;
 			posori_task->_desired_position = drop_food;
 			posori_task->_desired_orientation = lift_ori;
 			// q_curr_desired(9) = -M_PI;/
