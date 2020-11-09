@@ -316,10 +316,10 @@ int main()
 	// lift_ori *= good_ee_rot;
 	// Vector3d lift_height;
 	// lift_height << 0.0, 0.05, 0.25;
-	double z_lift = 0.5;
+	double z_lift = 0.45;
 
 	Vector3d drop_food;
-	drop_food << 0.12, 0.70, 0.50;
+	drop_food << 0.12, 0.70, 0.22;
 
 	Vector3d des_vel;
 	des_vel << 0.2, 0.2, 0.2;
@@ -552,9 +552,9 @@ int main()
 			// posori_task->_desired_angular_velocity = des_vel;
 			//cout << "stack_index:\n\r" << stack_idx << endl;
 			Vector3d r_food = stack_foods[stack_idx];
-			if(controller_counter %100 == 0){
-				cout << "r_food position"<<r_food << endl;
-			}
+			// if(controller_counter %100 == 0){
+			// 	cout << "r_food position"<<r_food << endl;
+			// }
 			
 			//cout << "r_food:\n\r" << r_food << endl; //0.6 0.5 0.48
 			//cout << "pos_spatula: " << spatula_pos << endl;
