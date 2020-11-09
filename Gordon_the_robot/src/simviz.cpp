@@ -64,6 +64,9 @@ const std::string JOINT_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuator
 const std::string BOTTOM_BUN_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::bottom_bun";
 const std::string BURGER_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::burger";
 const std::string TOP_BUN_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::top_bun";
+
+const std::string NEW_OBJECT_KEY = "sai2::cs225a::project::new_object";
+
 RedisClient redis_client;
 
 // simulation function prototype
@@ -411,6 +414,8 @@ void simulation(Sai2Model::Sai2Model *robot,
 	VectorXd command_torques = VectorXd::Zero(dof);
 	redis_client.setEigenMatrixJSON(JOINT_TORQUES_COMMANDED_KEY, command_torques);
 
+	string switch_food_flag = "false";
+	redis_client.set(NEW_OBJECT_KEY, switch_food_flag);
 	// create a timer
 	LoopTimer timer;
 	timer.initializeTimer();
@@ -481,6 +486,8 @@ void simulation(Sai2Model::Sai2Model *robot,
 		// g.setZero();
 		// read arm torques from redis and apply to simulated robot
 		command_torques = redis_client.getEigenMatrixJSON(JOINT_TORQUES_COMMANDED_KEY);
+		switch_food_flag = redis_client.get(NEW_OBJECT_KEY);
+
 		bottom_bun_command_torques = redis_client.getEigenMatrixJSON(BOTTOM_BUN_TORQUES_COMMANDED_KEY);
 		burger_command_torques = redis_client.getEigenMatrixJSON(BURGER_TORQUES_COMMANDED_KEY);
 		top_bun_command_torques = redis_client.getEigenMatrixJSON(TOP_BUN_TORQUES_COMMANDED_KEY);
@@ -561,6 +568,13 @@ void simulation(Sai2Model::Sai2Model *robot,
 		bottom_bun->updateModel();
 		bottom_bun->positionInWorld(r_bottom_bun, "link6");
 		r_bottom_bun += bottom_bun_offset;
+
+		if (switch_food_flag == "true")
+		{
+			// change the old objects invisble and no collision
+
+			// change the new object visible and turn on collision
+		}
 
 		// write new robot state to redis
 		redis_client.setEigenMatrixJSON(JOINT_ANGLES_KEY, robot->_q);

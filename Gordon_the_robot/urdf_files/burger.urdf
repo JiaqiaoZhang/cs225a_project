@@ -49,22 +49,22 @@
         <mass value="0.173" />
         <inertia ixx="7.821e-5" iyy="7.821e-5" izz="1.384e-4" ixy="0" ixz="0" iyz="0" />
       </inertial>
-      <visual>
+      <!-- <visual>
          <origin xyz = "0 0 0.01"/>
         <geometry>
-          <!-- <mesh filename="../../../zoom-chef/kitchen_objects/meshes/visual/Burger.obj" scale="1.0 1.0 1.0"/> -->
+          <mesh filename="../../../zoom-chef/kitchen_objects/meshes/visual/Burger.obj" scale="1.0 1.0 1.0"/>
            <box size="0.1 0.1 0.003175"/>
         </geometry>
         <material name="yellow">
         <color rgba="255 216 0 1"/>
         </material> 
-      </visual>
-      <!-- <visual>
+      </visual> -->
+      <visual>
         <origin xyz="0 0 0.009525"/>
         <geometry>
           <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/CheeseTwo.obj" scale="1.0 1.0 1.0"/>
         </geometry>
-      </visual> -->
+      </visual>
       <collision>
         <geometry>
           <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/collision/BurgerPrism.obj" scale="1.0 1.0 1.0"/>

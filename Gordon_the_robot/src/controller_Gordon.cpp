@@ -145,6 +145,8 @@ const std::string BOTTOM_BREAD_POSITION_KEY = "sai2::cs225a::bottom_bun::sensors
 const std::string BURGER_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::burger";
 const std::string TOP_BREAD_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::top_bun";
 
+const std::string NEW_OBJECT_KEY = "sai2::cs225a::project::new_object";
+
 //robot
 const std::string robot_file = "./resources/mmp_panda.urdf";
 
@@ -164,11 +166,13 @@ int main()
 	int task = ALIGN;
 	int state = STACKING;
 	int base = STACK_BASE;
-	int stack_idx = 0;
+	int stack_idx = 2;
 	int flipping_idx = 0;
 	bool flip_flag = false;
 	unsigned long long counter = 0;
 	const int object_nums = 3;
+
+	string switch_food_flag = "false";
 
 	// start redis client
 	auto redis_client = RedisClient();
@@ -345,7 +349,7 @@ int main()
 
 	double y_offset_tip = 0.051; // according to onshape - distance between spatula origin and front of spatula base
 	bool taskFinished = false;
-	int taskIndex = 0;
+	int taskIndex = 7;
 
 	posori_task->_use_interpolation_flag = true;
 	posori_task->_use_velocity_saturation_flag = false;
@@ -371,10 +375,9 @@ int main()
 		r_burger = redis_client.getEigenMatrixJSON(BURGER_POSITION_KEY);
 
 		//Vector3d stack_foods[] = {r_bottom_bread, r_burger, r_top_bread};
-		Vector3d stack_foods[] = {Vector3d(0.5, 0.5, 0.5),Vector3d(0.9, 0.5, 0.5), Vector3d(0.7, 0.5, 0.5)};
-		
-		
-		Vector3d robot_offset[] = {Vector3d(0, 0.15,0.37114), Vector3d(0, 0.15, 0.37114),Vector3d(0, 0.15, 0.37114)};
+		Vector3d stack_foods[] = {Vector3d(0.5, 0.5, 0.5), Vector3d(0.9, 0.5, 0.5), Vector3d(0.7, 0.5, 0.5)};
+
+		Vector3d robot_offset[] = {Vector3d(0, 0.15, 0.37114), Vector3d(0, 0.15, 0.37114), Vector3d(0, 0.15, 0.37114)};
 
 		robot->updateModel();
 
@@ -414,6 +417,9 @@ int main()
 				cout << "switch to FLIPPING state" << endl;
 				taskIndex = 0;
 				stack_idx = 0;
+
+				// send flag to simviz
+				switch_food_flag = "true";
 				continue;
 			}
 
@@ -488,9 +494,9 @@ int main()
 				taskFinished = true;
 				// state = SLIDE;
 			}
-			
+
 			// posori_task->reInitializeTask();
-			
+
 			// joint_task->reInitializeTask();
 			// // q_curr_desired(8) = M_PI/2;
 			// N_prec.setIdentity();
@@ -499,7 +505,7 @@ int main()
 			// // joint_task->_desired_position = initial_q;
 			// // joint_task->_use_velocity_saturation_flag = false;
 			// //N_prec = joint_task->_N;
-			
+
 			// // posori_task->_desired_position = reset_pos;
 			// // N_prec = joint_task->_N;
 			// posori_task->updateTaskModel(N_prec);
@@ -513,8 +519,6 @@ int main()
 			// 	//state = -1;
 			// }
 			// // joint_task->_desired_position = q_curr_desired;
-			
-			
 		}
 		break;
 		case MOVE_TO_BOARD:
@@ -552,10 +556,11 @@ int main()
 			// posori_task->_desired_angular_velocity = des_vel;
 			//cout << "stack_index:\n\r" << stack_idx << endl;
 			Vector3d r_food = stack_foods[stack_idx];
-			if(controller_counter %100 == 0){
-				cout << "r_food position"<<r_food << endl;
+			if (controller_counter % 100 == 0)
+			{
+				cout << "r_food position" << r_food << endl;
 			}
-			
+
 			//cout << "r_food:\n\r" << r_food << endl; //0.6 0.5 0.48
 			//cout << "pos_spatula: " << spatula_pos << endl;
 
@@ -680,7 +685,7 @@ int main()
 		// command_torques = posori_task_torques + joint_task_torques;
 
 		redis_client.setEigenMatrixJSON(JOINT_TORQUES_COMMANDED_KEY, command_torques);
-
+		redis_client.set(NEW_OBJECT_KEY, switch_food_flag);
 		controller_counter++;
 	}
 }
