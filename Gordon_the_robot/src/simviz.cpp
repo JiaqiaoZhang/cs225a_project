@@ -415,7 +415,7 @@ void simulation(Sai2Model::Sai2Model *robot,
 	LoopTimer timer;
 	timer.initializeTimer();
 
-	double slow_down_factor = 1.5;
+	double slow_down_factor = 2;
 	timer.setLoopFrequency(1000);
 	double last_time = timer.elapsedTime() / slow_down_factor; //secs
 	bool fTimerDidSleep = true;
