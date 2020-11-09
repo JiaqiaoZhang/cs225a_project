@@ -52,12 +52,12 @@
       <visual>
          <origin xyz = "0 0 0.01"/>
         <geometry>
-          <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/CheeseTwo.obj" scale="1.0 1.0 1.0"/>
-           <!-- <box size="0.1 0.1 0.003175"/> -->
+          <!-- <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/CheeseTwo.obj" scale="1.0 1.0 1.0"/> -->
+           <box size="0.14 0.14 0.01"/>
         </geometry>
-        <!-- <material name="yellow">
+        <material name="yellow">
         <color rgba="255 216 0 1"/>
-        </material>  -->
+        </material> 
       </visual>
       <!-- <visual>
         <origin xyz="0 0 0.009525"/>

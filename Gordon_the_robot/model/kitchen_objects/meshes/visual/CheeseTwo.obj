@@ -1206,8 +1206,8 @@ vn 0.0422 0.0423 -0.9982
 vn 0.0029 0.0029 -1.0000
 vn 0.0099 0.0101 -0.9999
 vn 0.0476 0.0462 -0.9978
-g Cheese_Cheese_Material.003
-usemtl Material.003
+g Cheese_Cheese_Material.002
+usemtl Material.002
 s 1
 f 1//1 2//2 3//3
 f 2//2 4//4 3//3
