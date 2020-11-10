@@ -427,7 +427,7 @@ void simulation(Sai2Model::Sai2Model *robot,
 	LoopTimer timer;
 	timer.initializeTimer();
 
-	double slow_down_factor = 2;
+	double slow_down_factor = 3;
 	timer.setLoopFrequency(1000);
 	double last_time = timer.elapsedTime() / slow_down_factor; //secs
 	bool fTimerDidSleep = true;
@@ -579,6 +579,10 @@ void simulation(Sai2Model::Sai2Model *robot,
 		if (switch_food_flag == "true")
 		{
 			ChangeObject(graphics, sim, top_bun_name, false);
+			ChangeObject(graphics, sim, burger_name, false);
+			ChangeObject(graphics, sim, bottom_bun_name, false);
+			//ChangeObject(graphics, sim, new_object_name, true);
+
 		}
 
 		// write new robot state to redis

@@ -15,97 +15,6 @@ void sighandler(int sig)
 {
 	runloop = false;
 }
-/*
-Define tasks: idle, align, slide, lift_spatula, drop_food, flip_food, reset
-Define states: state1, state2(assume task2 is one assembled object), state3(serve food)
-Set task as idle
-Set initial grill_index to 1
-Set initial flipping_index to 1
-Set flip flag to false
-Set time as global counting variable
-while(robot visualization is on and data is transmitting){
-Receive robot and sensor data from redis
-Start counting time
-if(time is passed 5 seconds){
-Set task to first task “align”
-}
-If( state is state1 for preparing):{
-Update posori_controller
-If(task is to align){
-align the spatula to the object[grill_index]
-if (position and ori reached){change task to slide}
-}
-Else if(task is to slide){
-slide the spatula under the object[grill_index]
-if (position and ori reached){change task to lift_spatula}
-}
-Else if(task is to lift_spatula){
-hold the object[grill_index] and lift
-if (position and ori reached){change task to drop_food}
-}
-Else if(task is to drop_food){
-Drop the object[grill_index] on cutting board
-if (position and ori reached){
-If (grill object is less than 3){
-change task to align
-Grill_index ++
-Else{
-change state to state2,
-change task to align
-change the object into assembled one}
-}
-reset
-}
-}
-Else If(state is state2 for flipping):{Update posori_controller
-If(task is to align){
-align the spatula to the assembled object
-if (position and ori reached){change task to slide}
-}
-Else if(task is to slide){
-slide the spatula under the assembled object
-if (position and ori reached){change task to lift_spatula}
-}
-Else if(task is to lift_spatula){
-hold the assembled object and lift
-if (position and ori reached){change task to flip_food}
-}
-Else if (task is to flip_food){
-Flip the assembled object
-if (position and ori reached){
-change task to drop_food
-}
-}
-Else if(task is to drop_food){
-drop the assembled object
-if (position and ori reached){
-wait a few minutes for cooking
-change state to state 3
-}
-reset
-}
-}
-Else if(state = state3){
-Update posori_controller
-If(task is to align){
-align the spatula to the assembled object
-if (position and ori reached){change task to slide}
-}
-Else if(task is to slide){
-slide the spatula under the assembled object
-if (position and ori reached){change task to lift_spatula}
-}
-Else if(task is to lift_spatula){
-hold the assembled object and lift
-if (position and ori reached){change task to drop_food}
-}
-Else if(task is to drop_food){
-Drop the object[grill_index] on dishif (position and ori reached){
-Change task to reset
-}
-}
-}
-*/
 
 // tasks
 #define IDLE 0
@@ -163,10 +72,10 @@ const std::string top_bread_name = "top_bun";
 unsigned long long controller_counter = 0;
 int main()
 {
-	int task = ALIGN;
+	int task = RESET_TASK;//ALIGN;
 	int state = STACKING;
 	int base = STACK_BASE;
-	int stack_idx = 2;
+	int stack_idx = 0;//2;
 	int flipping_idx = 0;
 	bool flip_flag = false;
 	unsigned long long counter = 0;
@@ -294,8 +203,8 @@ int main()
 	// 		-0.337309, -0.336174, 0.879324,
 	// 		-0.625451, -0.618081, -0.476221;
 	good_ee_rot << 1, 0, 0,
-			0, -1, 0,
-			0, 0, -1;
+				   0, -1, 0,
+				   0, 0, -1;
 
 	Vector3d slide;
 	slide << 0.0, 0.25, 0.0;
@@ -303,8 +212,8 @@ int main()
 	Matrix3d slide_ori;
 	double slide_angle = (180 - 6) * M_PI / 180.0; // 180 degrees is the starting position, instead of 0.
 	slide_ori << 1.0000000, 0.0000000, 0.0000000,
-			0.0000000, cos(slide_angle), -sin(slide_angle),
-			0.0000000, sin(slide_angle), cos(slide_angle);
+			     0.0000000, cos(slide_angle), -sin(slide_angle),
+			     0.0000000, sin(slide_angle), cos(slide_angle);
 
 	// slide_ori *= good_ee_rot;
 
@@ -315,8 +224,8 @@ int main()
 	// double lift_angle = 6 * M_PI / 180.0;
 
 	lift_ori << 1.0000000, 0.0000000, 0.0000000,
-			0.0000000, cos(lift_angle), -sin(lift_angle),
-			0.0000000, sin(lift_angle), cos(lift_angle);
+			    0.0000000, cos(lift_angle), -sin(lift_angle),
+			    0.0000000, sin(lift_angle), cos(lift_angle);
 	// lift_ori *= good_ee_rot;
 	// Vector3d lift_height;
 	// lift_height << 0.0, 0.05, 0.25;
@@ -324,12 +233,13 @@ int main()
 
 	Vector3d drop_food;
 	drop_food << 0.12, 0.70, 0.22;
+	//drop_food << 0.12, 0.65, 0.1;//
 
 	Vector3d des_vel;
 	des_vel << 0.2, 0.2, 0.2;
 
 	Vector3d reset_pos;
-	reset_pos << 0.1, 0.2, 0.5;
+	reset_pos << 0.12, 0.2, 0.5;
 
 	Matrix3d relax_ori;
 	double relax_angle = (180 - 70) * M_PI / 180.0;
@@ -349,7 +259,7 @@ int main()
 
 	double y_offset_tip = 0.051; // according to onshape - distance between spatula origin and front of spatula base
 	bool taskFinished = false;
-	int taskIndex = 7;
+	int taskIndex = 0;//7;
 
 	posori_task->_use_interpolation_flag = true;
 	posori_task->_use_velocity_saturation_flag = false;
@@ -396,8 +306,7 @@ int main()
 		{
 			/* code */
 			std::vector<int> tasks = {RESET_TASK, MOVE_TO_BOARD, ALIGN, SLIDE, LIFT_SPATULA, MOVE_TO_GRILL, DROP_FOOD};
-			//std::vector<int> tasks = {MOVE_TO_BOARD, ALIGN, SLIDE, LIFT_SPATULA, MOVE_TO_GRILL, DROP_FOOD};
-
+			
 			if (taskFinished)
 			{
 				taskIndex++;
@@ -405,7 +314,6 @@ int main()
 				if (taskIndex == tasks.size() && stack_idx < 2)
 				{
 					stack_idx++;
-					//cout << "stack index: " << stack_idx << endl;
 					taskIndex = 0;
 					cout << "pick another food" << endl;
 				}
@@ -419,7 +327,7 @@ int main()
 				stack_idx = 0;
 
 				// send flag to simviz
-				switch_food_flag = "true";
+				//switch_food_flag = "true";
 				continue;
 			}
 
@@ -430,8 +338,15 @@ int main()
 		{
 			std::vector<int> tasks = {RESET_TASK, ALIGN, SLIDE, LIFT_SPATULA, FLIP_FOOD, DROP_FOOD};
 			task = tasks[taskIndex];
+			
 			if (taskFinished)
-			{
+			{	
+				if (taskIndex == 0)
+				{
+					// send flag to simviz
+					switch_food_flag = "true";
+				}
+				
 				taskIndex++;
 				taskFinished = false;
 				cout << "switch to task number " << taskIndex << endl;
@@ -474,8 +389,6 @@ int main()
 		{
 		case IDLE:
 		{
-			// VectorXd dq_curr_desired = VectorXd::Zero(12);
-			// robot->_dq = dq_curr_desired;
 			q_curr_desired = robot->_q;
 		}
 		break;
@@ -492,33 +405,8 @@ int main()
 			{
 				cout << "RESET Finished" << endl;
 				taskFinished = true;
-				// state = SLIDE;
+				
 			}
-
-			// posori_task->reInitializeTask();
-
-			// joint_task->reInitializeTask();
-			// // q_curr_desired(8) = M_PI/2;
-			// N_prec.setIdentity();
-			// posori_task->updateTaskModel(N_prec);
-			// posori_task->_desired_position = reset_pos;
-			// // joint_task->_desired_position = initial_q;
-			// // joint_task->_use_velocity_saturation_flag = false;
-			// //N_prec = joint_task->_N;
-
-			// // posori_task->_desired_position = reset_pos;
-			// // N_prec = joint_task->_N;
-			// posori_task->updateTaskModel(N_prec);
-			// //joint_task->_desired_position =  q_curr_desired;
-			// //cout << "robot position: " << robot->_q << endl;
-			// //if ((robot->_q - q_curr_desired).norm() < 0.05)
-			// if ((robot->_q - initial_q).norm() < 0.1)
-			// {
-			// 	cout << "Reset Finished" << endl;
-			// 	taskFinished = true;
-			// 	//state = -1;
-			// }
-			// // joint_task->_desired_position = q_curr_desired;
 		}
 		break;
 		case MOVE_TO_BOARD:
@@ -537,7 +425,7 @@ int main()
 			{
 				cout << "Move to Board Finished" << endl;
 				taskFinished = true;
-				// state = SLIDE;
+				
 			}
 			joint_task->_desired_position = q_curr_desired;
 			// compute torques
@@ -545,10 +433,6 @@ int main()
 		break;
 		case ALIGN:
 		{
-			// align the spatula with the objects
-			// joint_task->reInitializeTask();
-			// joint_task->_kp = 0;
-
 			posori_task->reInitializeTask();
 			// posori_task->_otg->setMaxLinearVelocity(0.8);
 			// posori_task->_otg->setMaxAngularVelocity(M_PI / 2);
@@ -556,24 +440,15 @@ int main()
 			// posori_task->_desired_angular_velocity = des_vel;
 			//cout << "stack_index:\n\r" << stack_idx << endl;
 			Vector3d r_food = stack_foods[stack_idx];
-			if (controller_counter % 100 == 0)
-			{
-				cout << "r_food position" << r_food << endl;
-			}
-
-			//cout << "r_food:\n\r" << r_food << endl; //0.6 0.5 0.48
-			//cout << "pos_spatula: " << spatula_pos << endl;
-
-			//Vector3d robot_offset = Vector3d(0.1, 0.15, 0.3514); // where did this number come from
+					
 			Vector3d r_align = r_food - robot_offset[stack_idx];
-			//Vector3d r_align = r_food;
 			posori_task->_desired_position = r_align;
 			posori_task->_desired_orientation = good_ee_rot;
 			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
 			{
 				cout << "ALIGN Finished" << endl;
 				taskFinished = true;
-				// state = SLIDE;
+				
 			}
 			N_prec.setIdentity();
 			posori_task->updateTaskModel(N_prec);
@@ -597,7 +472,6 @@ int main()
 			{
 				cout << "SLIDE Finished" << endl;
 				taskFinished = true;
-				// state = -1;
 				continue;
 			}
 		}
@@ -623,7 +497,6 @@ int main()
 			}
 			break;
 		case MOVE_TO_GRILL:
-			//cout << "pos_spatula: " << spatula_pos << endl;
 			// set velocity to zero
 			joint_task->reInitializeTask();
 			posori_task->reInitializeTask();
@@ -632,7 +505,7 @@ int main()
 			joint_task->_use_velocity_saturation_flag = false;
 			q_curr_desired(0) = 0.1;
 			q_curr_desired(1) = 0;
-			posori_task->_desired_position = drop_food;
+			posori_task->_desired_position= drop_food;
 			posori_task->_desired_orientation = lift_ori;
 			// q_curr_desired(9) = -M_PI;/
 			joint_task->_use_velocity_saturation_flag = true;
@@ -641,7 +514,6 @@ int main()
 			{
 				cout << "Move to Grill finished" << endl;
 				taskFinished = true;
-				// state = SLIDE;
 				// state = -1;
 			}
 			joint_task->_desired_position = q_curr_desired;
@@ -654,8 +526,9 @@ int main()
 			posori_task->reInitializeTask();
 			// posori_task->_desired_position(1) = y_slide + 0.1;
 			posori_task->_desired_position(2) = z_lift - 0.1;
+			//posori_task->_desired_position = drop_food;
 			posori_task->_desired_orientation = relax_ori;
-
+			//posori_task->_desired_position = reset_pos;
 			N_prec.setIdentity();
 			posori_task->updateTaskModel(N_prec);
 			N_prec = posori_task->_N;
