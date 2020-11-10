@@ -1,10 +1,10 @@
 # Blender MTL File: 'cheese.blend'
 # Material Count: 1
 
-newmtl Material.001
+newmtl Material.002
 Ns 225.000000
-Ka 0.5
-Kd 1.000000 0.644480 0.019382
+Ka 0.3
+Kd 0.800000 0.707026 0.013793
 Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.450000

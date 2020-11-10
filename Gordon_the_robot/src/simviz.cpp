@@ -43,6 +43,8 @@ const string top_bun_name = "top_bun";
 const string bottom_bun_file = "./resources/bottom_bun.urdf";
 const string bottom_bun_name = "bottom_bun";
 
+const string new_object_file = "";
+
 // redis keys:
 // - write:
 const std::string JOINT_ANGLES_KEY = "sai2::cs225a::project::sensors::q";
@@ -78,6 +80,7 @@ void simulation(Sai2Model::Sai2Model *robot,
 								// Sai2Model::Sai2Model *lettuce,
 								Sai2Model::Sai2Model *top_bun,
 								Sai2Model::Sai2Model *bottom_bun,
+								Sai2Graphics::Sai2Graphics *graphics,
 								Simulation::Sai2Simulation *sim,
 								UIForceWidget *ui_force_widget);
 
@@ -92,6 +95,9 @@ void keySelect(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 // callback when a mouse button is pressed
 void mouseClick(GLFWwindow *window, int button, int action, int mods);
+
+// callback for changing dynamics and graphics
+void ChangeObject(Sai2Graphics::Sai2Graphics *graphics, Simulation::Sai2Simulation *sim, string robot_name, bool enable_dynamic_flag);
 
 // flags for scene camera movement
 bool fTransXp = false;
@@ -134,7 +140,7 @@ int main()
 	burger->updateModel();
 	burger->updateKinematics();
 
-	// auto tomato = new Sai2Model::Sai2Model(tomato_file, false);
+	// auto tomato = new ::Sai2Model(tomato_file, false);
 	// tomato->updateModel();
 	// tomato->updateKinematics();
 
@@ -247,7 +253,7 @@ int main()
 	// redis_client.setEigenMatrixJSON(SPATULA_JOINT_ANGLES_KEY, burger->_q);
 
 	// thread sim_thread(simulation, robot, spatula, burger, tomato, cheese, lettuce, top_bun, bottom_bun, sim, ui_force_widget);
-	thread sim_thread(simulation, robot, burger, top_bun, bottom_bun, sim, ui_force_widget);
+	thread sim_thread(simulation, robot, burger, top_bun, bottom_bun, graphics, sim, ui_force_widget);
 	// initialize glew
 	glewInitialize();
 
@@ -396,6 +402,7 @@ void simulation(Sai2Model::Sai2Model *robot,
 								// Sai2Model::Sai2Model *lettuce,
 								Sai2Model::Sai2Model *top_bun,
 								Sai2Model::Sai2Model *bottom_bun,
+								Sai2Graphics::Sai2Graphics *graphics,
 								Simulation::Sai2Simulation *sim,
 								UIForceWidget *ui_force_widget)
 {
@@ -571,9 +578,7 @@ void simulation(Sai2Model::Sai2Model *robot,
 
 		if (switch_food_flag == "true")
 		{
-			// change the old objects invisble and no collision
-
-			// change the new object visible and turn on collision
+			ChangeObject(graphics, sim, top_bun_name, false);
 		}
 
 		// write new robot state to redis
@@ -693,5 +698,30 @@ void mouseClick(GLFWwindow *window, int button, int action, int mods)
 		break;
 	default:
 		break;
+	}
+}
+
+// change dynamics and graphics
+void ChangeObject(Sai2Graphics::Sai2Graphics *graphics, Simulation::Sai2Simulation *sim, string robot_name, bool enable_dynamic_flag)
+{
+
+	for (auto robot : sim->_world->m_dynamicObjects)
+	{
+		if (robot->m_name == robot_name)
+		{
+			// cout << "change robot name " << robot_name << endl;
+			robot->enableDynamics(enable_dynamic_flag);
+			break;
+		}
+	}
+
+	for (unsigned int i = 0; i < graphics->_world->getNumChildren(); ++i)
+	{
+		if (robot_name == graphics->_world->getChild(i)->m_name)
+		{
+			// cast to cRobotBase
+			graphics->_world->getChild(i)->setEnabled(enable_dynamic_flag, true);
+			break;
+		}
 	}
 }

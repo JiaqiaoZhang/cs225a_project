@@ -320,10 +320,10 @@ int main()
 	// lift_ori *= good_ee_rot;
 	// Vector3d lift_height;
 	// lift_height << 0.0, 0.05, 0.25;
-	double z_lift = 0.5;
+	double z_lift = 0.45;
 
 	Vector3d drop_food;
-	drop_food << 0.12, 0.70, 0.50;
+	drop_food << 0.12, 0.70, 0.22;
 
 	Vector3d des_vel;
 	des_vel << 0.2, 0.2, 0.2;
