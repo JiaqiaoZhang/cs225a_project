@@ -534,32 +534,34 @@ int main()
 			break;
 		case MOVE_TO_GRILL:
 			// set velocity to zero
-			// if(!taskInitialized){
-			// cout << "move to grill started" << endl;
-			joint_task->reInitializeTask();
-			posori_task->reInitializeTask();
-			N_prec.setIdentity();
-			joint_task->updateTaskModel(N_prec);
-			joint_task->_use_velocity_saturation_flag = false;
-			q_curr_desired(0) = 0.1;
-			q_curr_desired(1) = 0;
-			posori_task->_desired_position= drop_food;
-			posori_task->_desired_orientation = lift_ori;
-			// q_curr_desired(9) = -M_PI;/
-			joint_task->_use_velocity_saturation_flag = true;
-			joint_task->_saturation_velocity(0) = 0.2;
-			joint_task->_desired_position = q_curr_desired;
-			// taskInitialized = true;
-			// }
+			if(!taskInitialized){
+				cout << "move to grill started" << endl;
+				joint_task->reInitializeTask();
+				posori_task->reInitializeTask();
+				N_prec.setIdentity();
+				posori_task->updateTaskModel(N_prec);
+				N_prec = posori_task->_N;
+				joint_task->updateTaskModel(N_prec);
+				q_curr_desired(0) = 0.1;
+				q_curr_desired(1) = 0;
+				posori_task->_desired_position= drop_food;
+				posori_task->_desired_orientation = lift_ori;
+				// q_curr_desired(9) = -M_PI;/
+				joint_task->_use_velocity_saturation_flag = true;
+				joint_task->_saturation_velocity(0) = 0.2;
+				joint_task->_desired_position = q_curr_desired;
+				taskInitialized = true;
+			}
 			
-			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05) && (robot->_q - q_curr_desired).norm() < 0.05)
+			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05) && abs(robot->_q(0) - q_curr_desired(0)) < 0.01 && abs(robot->_q(1) - q_curr_desired(1)) < 0.01)
 			{
 				cout << "Move to Grill finished" << endl;
 				taskFinished = true;
-				// taskInitialized = false;
+				taskInitialized = false;
 				// state = -1;
 				continue;
 			}
+			posori_task->computeTorques(posori_task_torques);
 			joint_task->computeTorques(joint_task_torques);
 			// compute torques
 			break;
