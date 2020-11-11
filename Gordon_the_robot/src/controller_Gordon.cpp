@@ -47,7 +47,7 @@ const std::string JOINT_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuator
 // KEY POSITION FOR BURGER
 const std::string BURGER_POSITION_KEY = "sai2::cs225a::burger::sensors::r_burger";
 const std::string TOP_BREAD_POSITION_KEY = "sai2::cs225a::top_bun::sensors::r_top_bun";
-const std::string GRILL_CHEESE_POSITION_KEY = "sai2::cs225a::bottom_bun::sensors::r_grill_cheese";
+const std::string GRILL_CHEESE_POSITION_KEY = "sai2::cs225a::grill_cheese::sensors::r_grill_cheese";
 
 // KEY POSITION FOR BUNS
 const std::string BOTTOM_BREAD_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::bottom_bun";
@@ -57,7 +57,7 @@ const std::string BURGER_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuato
 const std::string TOP_BREAD_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::top_bun";
 const std::string GRILL_CHEESE_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::grill_cheese";
 
-const std::string GRILL_CHEESE_KEY = "sai2::cs225a::project::grill_cheese";
+const std::string SWITCH_OBJECT_KEY = "sai2::cs225a::project::switch_object";
 
 //robot
 const std::string robot_file = "./resources/mmp_panda.urdf";
@@ -577,7 +577,7 @@ int main()
 		// command_torques = posori_task_torques + joint_task_torques;
 
 		redis_client.setEigenMatrixJSON(JOINT_TORQUES_COMMANDED_KEY, command_torques);
-		redis_client.set(GRILL_CHEESE_KEY, switch_food_flag);
+		redis_client.set(SWITCH_OBJECT_KEY, switch_food_flag);
 		controller_counter++;
 	}
 }

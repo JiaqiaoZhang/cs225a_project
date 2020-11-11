@@ -60,7 +60,7 @@ const std::string BURGER_POSITION_KEY = "sai2::cs225a::burger::sensors::r_burger
 // const std::string LETTUCE_POSITION_KEY = "sai2::cs225a::lettuce::sensors::r_lettuce";
 const std::string TOP_BUN_POSITION_KEY = "sai2::cs225a::top_bun::sensors::r_top_bun";
 const std::string BOTTOM_BUN_POSITION_KEY = "sai2::cs225a::bottom_bun::sensors::r_bottom_bun";
-const std::string GRILL_CHEESE_POSITION_KEY = "sai2::cs225a::bottom_bun::sensors::r_grill_cheese";
+const std::string GRILL_CHEESE_POSITION_KEY = "sai2::cs225a::grill_cheese::sensors::r_grill_cheese";
 
 // - read
 const std::string JOINT_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::fgc";
@@ -69,7 +69,7 @@ const std::string BURGER_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuato
 const std::string TOP_BUN_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::top_bun";
 const std::string GRILL_CHEESE_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::grill_cheese";
 
-const std::string GRILL_CHEESE_KEY = "sai2::cs225a::project::grill_cheese";
+const std::string SWITCH_OBJECT_KEY = "sai2::cs225a::project::switch_object";
 
 RedisClient redis_client;
 
@@ -82,6 +82,7 @@ void simulation(Sai2Model::Sai2Model *robot,
 								// Sai2Model::Sai2Model *lettuce,
 								Sai2Model::Sai2Model *top_bun,
 								Sai2Model::Sai2Model *bottom_bun,
+								Sai2Model::Sai2Model *grill_cheese,
 								Sai2Graphics::Sai2Graphics *graphics,
 								Simulation::Sai2Simulation *sim,
 								UIForceWidget *ui_force_widget);
@@ -265,7 +266,7 @@ int main()
 	// redis_client.setEigenMatrixJSON(SPATULA_JOINT_ANGLES_KEY, burger->_q);
 
 	// thread sim_thread(simulation, robot, spatula, burger, tomato, cheese, lettuce, top_bun, bottom_bun, sim, ui_force_widget);
-	thread sim_thread(simulation, robot, burger, top_bun, bottom_bun, graphics, sim, ui_force_widget);
+	thread sim_thread(simulation, robot, burger, top_bun, bottom_bun,grill_cheese, graphics, sim, ui_force_widget);
 	// initialize glew
 	glewInitialize();
 
@@ -283,6 +284,7 @@ int main()
 		// graphics->updateGraphics(lettuce_name, lettuce);
 		graphics->updateGraphics(top_bun_name, top_bun);
 		graphics->updateGraphics(bottom_bun_name, bottom_bun);
+		graphics->updateGraphics(grill_cheese_name, grill_cheese);
 		graphics->render(camera_name, width, height);
 
 		// swap buffers
@@ -414,6 +416,7 @@ void simulation(Sai2Model::Sai2Model *robot,
 								// Sai2Model::Sai2Model *lettuce,
 								Sai2Model::Sai2Model *top_bun,
 								Sai2Model::Sai2Model *bottom_bun,
+								Sai2Model::Sai2Model *grill_cheese,
 								Sai2Graphics::Sai2Graphics *graphics,
 								Simulation::Sai2Simulation *sim,
 								UIForceWidget *ui_force_widget)
@@ -437,7 +440,7 @@ void simulation(Sai2Model::Sai2Model *robot,
 	redis_client.setEigenMatrixJSON(JOINT_TORQUES_COMMANDED_KEY, command_torques);
 
 	string switch_food_flag = "false";
-	redis_client.set(GRILL_CHEESE_KEY, switch_food_flag);
+	redis_client.set(SWITCH_OBJECT_KEY, switch_food_flag);
 	// create a timer
 	LoopTimer timer;
 	timer.initializeTimer();
@@ -486,6 +489,10 @@ void simulation(Sai2Model::Sai2Model *robot,
 	Eigen::Vector3d top_bun_offset;
 	top_bun_offset << 0.7, 0.5, 0.5;
 
+	Eigen::Vector3d r_grill_cheese = Vector3d::Zero();
+	Eigen::Vector3d grill_cheese_offset;
+	top_bun_offset << 0.12, 0.7, 0.48;
+
 	// Eigen::Vector3d r_lettuce = Vector3d::Zero();
 	// Eigen::Vector3d lettuce_offset;
 	// lettuce_offset << 0.8, 0.5, 0.5;
@@ -508,11 +515,12 @@ void simulation(Sai2Model::Sai2Model *robot,
 		// g.setZero();
 		// read arm torques from redis and apply to simulated robot
 		command_torques = redis_client.getEigenMatrixJSON(JOINT_TORQUES_COMMANDED_KEY);
-		switch_food_flag = redis_client.get(GRILL_CHEESE_KEY);
+		switch_food_flag = redis_client.get(SWITCH_OBJECT_KEY);
 
 		bottom_bun_command_torques = redis_client.getEigenMatrixJSON(BOTTOM_BUN_TORQUES_COMMANDED_KEY);
 		burger_command_torques = redis_client.getEigenMatrixJSON(BURGER_TORQUES_COMMANDED_KEY);
 		top_bun_command_torques = redis_client.getEigenMatrixJSON(TOP_BUN_TORQUES_COMMANDED_KEY);
+		grill_cheese_command_torques = redis_client.getEigenMatrixJSON(GRILL_CHEESE_TORQUES_COMMANDED_KEY);
 
 		ui_force_widget->getUIForce(ui_force);
 		ui_force_widget->getUIJointTorques(ui_force_command_torques);
@@ -525,6 +533,7 @@ void simulation(Sai2Model::Sai2Model *robot,
 		sim->setJointTorques(bottom_bun_name, bottom_bun_command_torques);
 		sim->setJointTorques(burger_name, burger_command_torques);
 		sim->setJointTorques(top_bun_name, top_bun_command_torques);
+		sim->setJointTorques(grill_cheese_name, grill_cheese_command_torques);
 
 		// integrate forward
 
@@ -591,6 +600,12 @@ void simulation(Sai2Model::Sai2Model *robot,
 		bottom_bun->positionInWorld(r_bottom_bun, "link6");
 		r_bottom_bun += bottom_bun_offset;
 
+		sim->getJointPositions(grill_cheese_name, grill_cheese->_q);
+		sim->getJointVelocities(grill_cheese_name, grill_cheese->_dq);
+		grill_cheese->updateModel();
+		grill_cheese->positionInWorld(r_grill_cheese, "link6");
+		r_grill_cheese += grill_cheese_offset;
+
 		if (switch_food_flag == "true")
 		{
 			ChangeObject(graphics, sim, top_bun_name, false);
@@ -617,6 +632,7 @@ void simulation(Sai2Model::Sai2Model *robot,
 		// redis_client.setEigenMatrixJSON(LETTUCE_POSITION_KEY, r_lettuce);
 		redis_client.setEigenMatrixJSON(TOP_BUN_POSITION_KEY, r_top_bun);
 		redis_client.setEigenMatrixJSON(BOTTOM_BUN_POSITION_KEY, r_bottom_bun);
+		redis_client.setEigenMatrixJSON(GRILL_CHEESE_POSITION_KEY, r_grill_cheese);
 
 		//update last time
 		last_time = curr_time;
