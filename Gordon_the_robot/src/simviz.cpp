@@ -197,7 +197,7 @@ int main()
 	// Eigen::Vector3d r_lettuce;
 	Eigen::Vector3d r_top_bun;
 	Eigen::Vector3d r_bottom_bun;
-
+	Eigen::Vector3d r_grill_cheese;
 	// spatula->positionInWorld(r_spatula, "link6", Vector3d(0, 0, 0));
 	// spatula->rotationInWorld(ori_spatula, "link6");
 	// spatula->updateModel();
@@ -216,6 +216,10 @@ int main()
 	top_bun->updateModel();
 	bottom_bun->positionInWorld(r_bottom_bun, "link6", Vector3d(0, 0, 0));
 	bottom_bun->updateModel();
+
+	grill_cheese->positionInWorld(r_grill_cheese, "link6", Vector3d(0, 0, 0));
+	grill_cheese->updateModel();
+
 
 	/*------- Set up visualization -------*/
 	// set up error callback
