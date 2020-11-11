@@ -251,7 +251,7 @@ int main()
 	double z_lift = 0.45;
 
 	Vector3d drop_food;
-	drop_food << 0.12, 0.70, 0.22;
+	drop_food << 0.12, 0.68, 0.22;
 	//drop_food << 0.12, 0.65, 0.1;//
 
 	Vector3d des_vel;
@@ -261,7 +261,7 @@ int main()
 	reset_pos << 0.12, 0.2, 0.5;
 
 	Matrix3d relax_ori;
-	double relax_angle = (180 - 70) * M_PI / 180.0;
+	double relax_angle = (180 - 60) * M_PI / 180.0;
 	// relax_ori = lift_ori.transpose();
 	relax_ori << 1.0000000, 0.0000000, 0.0000000,
 			0.0000000, cos(relax_angle), -sin(relax_angle),
@@ -448,7 +448,7 @@ int main()
 				joint_task->updateTaskModel(N_prec);
 				
 				q_curr_desired(0) = 0.55;
-				q_curr_desired(1) = -0.2;
+				q_curr_desired(1) = -0.15;
 				joint_task->_use_velocity_saturation_flag = true;
 				joint_task->_saturation_velocity(0) = 0.2;
 				joint_task->_desired_position = q_curr_desired;
@@ -562,7 +562,7 @@ int main()
 				N_prec = posori_task->_N;
 				joint_task->updateTaskModel(N_prec);
 				q_curr_desired(0) = 0.1;
-				q_curr_desired(1) = 0;
+				q_curr_desired(1) = 0.1;
 				posori_task->_desired_position= drop_food;
 				posori_task->_desired_orientation = lift_ori;
 				// q_curr_desired(9) = -M_PI;/
@@ -590,7 +590,7 @@ int main()
 				// drop the food to the grill
 				posori_task->reInitializeTask();
 				// posori_task->_desired_position(1) = y_slide + 0.1;
-				posori_task->_desired_position(2) = z_lift - 0.1;
+				posori_task->_desired_position(2) = z_lift - 0.15;
 				//posori_task->_desired_position = drop_food;
 				posori_task->_desired_orientation = relax_ori;
 				//posori_task->_desired_position = reset_pos;
@@ -602,7 +602,8 @@ int main()
 				taskInitialized = true;
 			}
 			
-
+			//cout << "spatula position" << init_spatula_pos << endl;
+										
 			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
 			{
 				cout << "Drop Food Finished" << endl;
