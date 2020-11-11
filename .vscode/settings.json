@@ -45,6 +45,16 @@
     "optional": "cpp",
     "random": "cpp",
     "string": "cpp",
-    "string_view": "cpp"
+    "string_view": "cpp",
+    "ctime": "cpp",
+    "strstream": "cpp",
+    "bitset": "cpp",
+    "chrono": "cpp",
+    "codecvt": "cpp",
+    "complex": "cpp",
+    "map": "cpp",
+    "ratio": "cpp",
+    "iomanip": "cpp",
+    "cfenv": "cpp"
   }
 }

@@ -27,7 +27,7 @@ void sighandler(int sig)
 #define MOVE_TO_BOARD 12
 #define MOVE_TO_GRILL 13
 #define MOVE_TO_CORNER 14
-
+#define ALIGN2 15
 // states
 #define STACKING 7
 #define FLIPPING 8
@@ -79,10 +79,10 @@ const string grill_cheese_name = "grill_cheese";
 unsigned long long controller_counter = 0;
 int main()
 {
-	int task = RESET_TASK;//ALIGN;
-	int state = STACKING;
+	int task = RESET_TASK; //ALIGN;
+	int state = FLIPPING;
 	int base = STACK_BASE;
-	int stack_idx = 0;//2;
+	int stack_idx = 0; //2;
 	int flipping_idx = 0;
 	bool flip_flag = false;
 	unsigned long long counter = 0;
@@ -222,8 +222,8 @@ int main()
 	// 		-0.337309, -0.336174, 0.879324,
 	// 		-0.625451, -0.618081, -0.476221;
 	good_ee_rot << 1, 0, 0,
-				   0, -1, 0,
-				   0, 0, -1;
+			0, -1, 0,
+			0, 0, -1;
 
 	Vector3d slide;
 	slide << 0.0, 0.25, 0.0;
@@ -231,8 +231,8 @@ int main()
 	Matrix3d slide_ori;
 	double slide_angle = (180 - 6) * M_PI / 180.0; // 180 degrees is the starting position, instead of 0.
 	slide_ori << 1.0000000, 0.0000000, 0.0000000,
-			     0.0000000, cos(slide_angle), -sin(slide_angle),
-			     0.0000000, sin(slide_angle), cos(slide_angle);
+			0.0000000, cos(slide_angle), -sin(slide_angle),
+			0.0000000, sin(slide_angle), cos(slide_angle);
 
 	// slide_ori *= good_ee_rot;
 
@@ -243,8 +243,8 @@ int main()
 	// double lift_angle = 6 * M_PI / 180.0;
 
 	lift_ori << 1.0000000, 0.0000000, 0.0000000,
-			    0.0000000, cos(lift_angle), -sin(lift_angle),
-			    0.0000000, sin(lift_angle), cos(lift_angle);
+			0.0000000, cos(lift_angle), -sin(lift_angle),
+			0.0000000, sin(lift_angle), cos(lift_angle);
 	// lift_ori *= good_ee_rot;
 	// Vector3d lift_height;
 	// lift_height << 0.0, 0.05, 0.25;
@@ -278,7 +278,7 @@ int main()
 
 	double y_offset_tip = 0.051; // according to onshape - distance between spatula origin and front of spatula base
 	bool taskFinished = false;
-	int taskIndex = 0;//7;
+	int taskIndex = 0; //7;
 
 	posori_task->_use_interpolation_flag = true;
 	posori_task->_use_velocity_saturation_flag = false;
@@ -291,6 +291,12 @@ int main()
 	bool taskInitialized = false;
 	VectorXd q_curr_desired = VectorXd::Zero(10); // container  7 for joints, 3 for mobile base
 	q_curr_desired = robot->_q;
+
+	//Vector3d stack_foods[] = {r_bottom_bread, r_burger, r_top_bread};
+	std::vector<Vector3d> stack_foods = {Vector3d(0.5, 0.5, 0.5), Vector3d(0.9, 0.5, 0.5), Vector3d(0.7, 0.5, 0.5)};
+
+	std::vector<Vector3d> robot_offset = {Vector3d(0, 0.15, 0.37114), Vector3d(0, 0.15, 0.37114), Vector3d(0, 0.15, 0.37114)};
+
 	while (runloop)
 	{
 		timer.waitForNextLoop();
@@ -306,16 +312,15 @@ int main()
 		r_top_bread = redis_client.getEigenMatrixJSON(TOP_BREAD_POSITION_KEY);
 		r_burger = redis_client.getEigenMatrixJSON(BURGER_POSITION_KEY);
 
-		//Vector3d stack_foods[] = {r_bottom_bread, r_burger, r_top_bread};
-		Vector3d stack_foods[] = {Vector3d(0.5, 0.5, 0.5), Vector3d(0.9, 0.5, 0.5), Vector3d(0.7, 0.5, 0.5)};
+		// //Vector3d stack_foods[] = {r_bottom_bread, r_burger, r_top_bread};
+		// std::vector<Vector3d> stack_foods = {Vector3d(0.5, 0.5, 0.5), Vector3d(0.9, 0.5, 0.5), Vector3d(0.7, 0.5, 0.5)};
 
-		Vector3d robot_offset[] = {Vector3d(0, 0.15, 0.37114), Vector3d(0, 0.15, 0.37114), Vector3d(0, 0.15, 0.37114)};
+		// std::vector<Vector3d> robot_offset = {Vector3d(0, 0.15, 0.37114), Vector3d(0, 0.15, 0.37114), Vector3d(0, 0.15, 0.37114)};
 
 		robot->updateModel();
 
-		
-		
-
+		joint_task_torques = VectorXd::Zero(dof);
+		posori_task_torques = VectorXd::Zero(dof);
 		// Vector3d spatula_pos;
 		// robot->positionInWorld(spatula_pos, control_link, control_point);
 		// Matrix3d spatula_rot;
@@ -328,7 +333,7 @@ int main()
 		{
 			/* code */
 			std::vector<int> tasks = {RESET_TASK, MOVE_TO_BOARD, ALIGN, SLIDE, LIFT_SPATULA, MOVE_TO_GRILL, DROP_FOOD};
-			
+
 			if (taskFinished)
 			{
 				taskIndex++;
@@ -349,7 +354,7 @@ int main()
 				stack_idx = 0;
 
 				// send flag to simviz
-				//switch_food_flag = "true";
+				// switch_food_flag = "true";
 				continue;
 			}
 
@@ -358,27 +363,60 @@ int main()
 		break;
 		case FLIPPING:
 		{
-			std::vector<int> tasks = {RESET_TASK, ALIGN, SLIDE, LIFT_SPATULA, FLIP_FOOD, DROP_FOOD};
-			task = tasks[taskIndex];
-			
+			std::vector<int> tasks = {RESET_TASK, ALIGN2, SLIDE, LIFT_SPATULA, FLIP_FOOD};
+			stack_foods = {Vector3d(0.12, 0.65, 0.55)};
+
+			// robot_offset = {Vector3d(0, 0.15, 0.37114)};
+			robot_offset = {Vector3d(0, 0.15, 0.4)}; // 0.55 - X = 1/2 thickness
+			// task = tasks[taskIndex];
+
+			// if (taskFinished)
+			// {
+			// 	if (taskIndex == 0)
+			// 	{
+			// 		// send flag to simviz
+			// 		switch_food_flag = "true";
+			// 	}
+
+			// 	taskIndex++;
+			// 	taskFinished = false;
+			// 	cout << "switch to task number " << taskIndex << endl;
+			// }
+			// if (taskIndex == tasks.size())
+			// {
+			// 	state = SERVING;
+			// 	cout << "switch to SERVING state" << endl;
+			// 	taskIndex = 0;
+			// }
+			y_slide = 0.7;
+			if (taskIndex == 0)
+			{
+				// send flag to simviz
+				switch_food_flag = "true";
+			}
 			if (taskFinished)
-			{	
-				if (taskIndex == 0)
-				{
-					// send flag to simviz
-					switch_food_flag = "true";
-				}
-				
+			{
 				taskIndex++;
 				taskFinished = false;
+
+				if (taskIndex == tasks.size() && stack_idx < 2)
+				{
+					stack_idx++;
+					taskIndex = 0;
+					cout << "pick up sandwitch" << endl;
+				}
 				cout << "switch to task number " << taskIndex << endl;
 			}
-			if (taskIndex == tasks.size())
+			if (taskIndex == tasks.size() && stack_idx == 2)
 			{
 				state = SERVING;
-				cout << "switch to SERVING state" << endl;
+				cout << "switch to Serving state" << endl;
 				taskIndex = 0;
+				stack_idx = 0;
+				continue;
 			}
+
+			task = tasks[taskIndex];
 		}
 		break;
 		case SERVING:
@@ -416,7 +454,8 @@ int main()
 		break;
 		case RESET_TASK:
 		{
-			if(!taskInitialized){
+			if (!taskInitialized)
+			{
 				posori_task->reInitializeTask();
 				N_prec.setIdentity();
 				posori_task->updateTaskModel(N_prec);
@@ -424,6 +463,8 @@ int main()
 				joint_task->updateTaskModel(N_prec);
 				posori_task->_desired_position = init_spatula_pos;
 				posori_task->_desired_orientation = init_spatula_rot;
+				q_curr_desired(1) = 0;
+				joint_task->_desired_position = q_curr_desired; //move the base further from table
 				taskInitialized = true;
 			}
 			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
@@ -440,23 +481,24 @@ int main()
 		break;
 		case MOVE_TO_BOARD:
 		{
-			if(!taskInitialized){
+			if (!taskInitialized)
+			{
 				posori_task->reInitializeTask();
 				joint_task->reInitializeTask();
 
 				N_prec.setIdentity();
 				joint_task->updateTaskModel(N_prec);
-				
-				q_curr_desired(0) = 0.55;
-				q_curr_desired(1) = -0.15;
+
+				q_curr_desired(0) = 0.5;
+				q_curr_desired(1) = -0.2;
 				joint_task->_use_velocity_saturation_flag = true;
 				joint_task->_saturation_velocity(0) = 0.2;
 				joint_task->_desired_position = q_curr_desired;
-				posori_task->_desired_orientation = good_ee_rot;
+				// posori_task->_desired_orientation = good_ee_rot;
 				taskInitialized = true;
-				cout << "move to board started" << endl; 
+				cout << "move to board started" << endl;
 			}
-			
+
 			if ((robot->_q - q_curr_desired).norm() < 0.05)
 			{
 				cout << "Move to Board Finished" << endl;
@@ -464,18 +506,19 @@ int main()
 				taskInitialized = false;
 				continue;
 			}
-			
+
 			joint_task->computeTorques(joint_task_torques);
 			// compute torques
 		}
 		break;
 		case ALIGN:
 		{
-			if(!taskInitialized){
+			if (!taskInitialized)
+			{
 				posori_task->reInitializeTask();
-				
+
 				Vector3d r_food = stack_foods[stack_idx];
-						
+
 				Vector3d r_align = r_food - robot_offset[stack_idx];
 				posori_task->_desired_position = r_align;
 				posori_task->_desired_orientation = good_ee_rot;
@@ -485,7 +528,7 @@ int main()
 				joint_task->updateTaskModel(N_prec);
 				taskInitialized = true;
 			}
-			
+
 			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
 			{
 				cout << "ALIGN Finished" << endl;
@@ -499,7 +542,8 @@ int main()
 		break;
 		case SLIDE:
 		{
-			if(!taskInitialized){
+			if (!taskInitialized)
+			{
 				posori_task->reInitializeTask();
 
 				posori_task->_desired_position(1) = y_slide;
@@ -511,7 +555,6 @@ int main()
 				joint_task->updateTaskModel(N_prec);
 				taskInitialized = true;
 			}
-			
 
 			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
 			{
@@ -525,7 +568,8 @@ int main()
 		}
 		break;
 		case LIFT_SPATULA:
-			if(!taskInitialized){
+			if (!taskInitialized)
+			{
 				posori_task->reInitializeTask();
 
 				posori_task->_desired_position(2) = z_lift;
@@ -538,7 +582,6 @@ int main()
 				joint_task->updateTaskModel(N_prec);
 				taskInitialized = true;
 			}
-			
 
 			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
 			{
@@ -553,7 +596,8 @@ int main()
 			break;
 		case MOVE_TO_GRILL:
 			// set velocity to zero
-			if(!taskInitialized){
+			if (!taskInitialized)
+			{
 				cout << "move to grill started" << endl;
 				joint_task->reInitializeTask();
 				posori_task->reInitializeTask();
@@ -563,7 +607,7 @@ int main()
 				joint_task->updateTaskModel(N_prec);
 				q_curr_desired(0) = 0.1;
 				q_curr_desired(1) = 0.1;
-				posori_task->_desired_position= drop_food;
+				posori_task->_desired_position = drop_food;
 				posori_task->_desired_orientation = lift_ori;
 				// q_curr_desired(9) = -M_PI;/
 				joint_task->_use_velocity_saturation_flag = true;
@@ -571,8 +615,8 @@ int main()
 				joint_task->_desired_position = q_curr_desired;
 				taskInitialized = true;
 			}
-			
-			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05) && abs(robot->_q(0) - q_curr_desired(0)) < 0.01 && abs(robot->_q(1) - q_curr_desired(1)) < 0.01)
+
+			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
 			{
 				cout << "Move to Grill finished" << endl;
 				taskFinished = true;
@@ -586,11 +630,13 @@ int main()
 			break;
 
 		case DROP_FOOD:
-			if(!taskInitialized){
+			if (!taskInitialized)
+			{
+				cout << "drop food start" << endl;
 				// drop the food to the grill
 				posori_task->reInitializeTask();
 				// posori_task->_desired_position(1) = y_slide + 0.1;
-				posori_task->_desired_position(2) = z_lift - 0.15;
+				posori_task->_desired_position(2) = z_lift - 0.13;
 				//posori_task->_desired_position = drop_food;
 				posori_task->_desired_orientation = relax_ori;
 				//posori_task->_desired_position = reset_pos;
@@ -601,9 +647,9 @@ int main()
 				joint_task->updateTaskModel(N_prec);
 				taskInitialized = true;
 			}
-			
+
 			//cout << "spatula position" << init_spatula_pos << endl;
-										
+
 			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
 			{
 				cout << "Drop Food Finished" << endl;
@@ -615,6 +661,42 @@ int main()
 			posori_task->computeTorques(posori_task_torques);
 			joint_task->computeTorques(joint_task_torques);
 			break;
+
+		case ALIGN2:
+		{
+			if (!taskInitialized)
+			{
+				posori_task->reInitializeTask();
+
+				Vector3d r_food = stack_foods[stack_idx];
+
+				Vector3d r_align = r_food - robot_offset[stack_idx];
+				posori_task->_desired_position = r_align;
+				posori_task->_desired_orientation = good_ee_rot;
+				N_prec.setIdentity();
+				posori_task->updateTaskModel(N_prec);
+				N_prec = posori_task->_N;
+				joint_task->updateTaskModel(N_prec);
+				joint_task->_desired_position = robot->_q;
+				joint_task->_kp = 100.0;
+				joint_task->_kv = 20.0;
+				// q_curr_desired(0) = 0.1;
+				// q_curr_desired(1) = 0;
+				joint_task->_desired_position(0) = 0.1;
+				joint_task->_desired_position(1) = 0;
+				taskInitialized = true;
+			}
+
+			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
+			{
+				cout << "ALIGN TO SANDWITCH Finished" << endl;
+				taskFinished = true;
+				taskInitialized = false;
+				continue;
+			}
+			posori_task->computeTorques(posori_task_torques);
+			// joint_task->computeTorques(joint_task_torques);
+		}
 		case SERVING:
 			break;
 		default:

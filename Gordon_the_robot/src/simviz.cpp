@@ -130,11 +130,10 @@ int main()
 	auto bottom_bun = new Sai2Model::Sai2Model(bottom_bun_file, false);
 	bottom_bun->updateModel();
 	bottom_bun->updateKinematics();
-	
+
 	auto grill_cheese = new Sai2Model::Sai2Model(grill_cheese_file, false);
 	grill_cheese->updateModel();
 	grill_cheese->updateKinematics();
-	
 
 	// load simulation world
 	auto sim = new Simulation::Sai2Simulation(world_file, false);
@@ -146,14 +145,13 @@ int main()
 	sim->getJointPositions(robot_name, robot->_q);
 	sim->getJointVelocities(robot_name, robot->_dq);
 	robot->updateKinematics();
-			
+
 	//set initial position of burger in world
-	
+
 	Eigen::Vector3d r_burger;
 	Eigen::Vector3d r_top_bun;
 	Eigen::Vector3d r_bottom_bun;
 	Eigen::Vector3d r_grill_cheese;
-	
 
 	burger->positionInWorld(r_burger, "link6", Vector3d(0, 0, 0));
 	burger->updateModel();
@@ -166,7 +164,6 @@ int main()
 
 	grill_cheese->positionInWorld(r_grill_cheese, "link6", Vector3d(0, 0, 0));
 	grill_cheese->updateModel();
-
 
 	/*------- Set up visualization -------*/
 	// set up error callback
@@ -213,10 +210,10 @@ int main()
 
 	redis_client.setEigenMatrixJSON(JOINT_ANGLES_KEY, robot->_q);
 	redis_client.setEigenMatrixJSON(JOINT_VELOCITIES_KEY, robot->_dq);
-	
+
 	// thread sim_thread(simulation, robot, spatula, burger, tomato, cheese, lettuce, top_bun, bottom_bun, sim, ui_force_widget);
 	//thread sim_thread(simulation, robot, burger, top_bun, bottom_bun, graphics, sim, ui_force_widget);
-	thread sim_thread(simulation, robot, burger, top_bun, bottom_bun,grill_cheese, graphics, sim, ui_force_widget);
+	thread sim_thread(simulation, robot, burger, top_bun, bottom_bun, grill_cheese, graphics, sim, ui_force_widget);
 
 	// initialize glew
 	glewInitialize();
@@ -390,7 +387,7 @@ void simulation(Sai2Model::Sai2Model *robot,
 	LoopTimer timer;
 	timer.initializeTimer();
 
-	double slow_down_factor = 3;
+	double slow_down_factor = 2;
 	timer.setLoopFrequency(1000);
 	double last_time = timer.elapsedTime() / slow_down_factor; //secs
 	bool fTimerDidSleep = true;
@@ -404,12 +401,11 @@ void simulation(Sai2Model::Sai2Model *robot,
 	Eigen::VectorXd ui_force_command_torques;
 	ui_force_command_torques.setZero();
 
-
 	Eigen::Vector3d r_burger;
 	Eigen::Vector3d burger_offset;
 
 	burger_offset << 0.5, 0.5, 0.5;
-	
+
 	Eigen::Vector3d r_bottom_bun = Vector3d::Zero();
 	Eigen::Vector3d bottom_bun_offset;
 	bottom_bun_offset << 0.6, 0.5, 0.5;
@@ -420,8 +416,9 @@ void simulation(Sai2Model::Sai2Model *robot,
 
 	Eigen::Vector3d r_grill_cheese = Vector3d::Zero();
 	Eigen::Vector3d grill_cheese_offset;
-	grill_cheese_offset << 0.12, 0.7, 0.48;
-	
+	// grill_cheese_offset << 0.12, 0.7, 0.48;
+	grill_cheese_offset << 0.12, 0.65, 0.50;
+
 	while (fSimulationRunning)
 	{
 		fTimerDidSleep = timer.waitForNextLoop();
@@ -489,18 +486,19 @@ void simulation(Sai2Model::Sai2Model *robot,
 		grill_cheese->updateModel();
 		grill_cheese->positionInWorld(r_grill_cheese, "link6");
 		r_grill_cheese += grill_cheese_offset;
-		
+
 		if (switch_food_flag == "true")
 		{
 			ChangeObject(graphics, sim, top_bun_name, false);
 			ChangeObject(graphics, sim, burger_name, false);
 			ChangeObject(graphics, sim, bottom_bun_name, false);
 			ChangeObject(graphics, sim, grill_cheese_name, true);
-		
-		}else{
+		}
+		else
+		{
 			//make grill cheese object invisible at start up
 			ChangeObject(graphics, sim, grill_cheese_name, false);
-		} 
+		}
 
 		// write new robot state to redis
 		redis_client.setEigenMatrixJSON(JOINT_ANGLES_KEY, robot->_q);
