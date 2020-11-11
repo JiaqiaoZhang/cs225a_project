@@ -43,8 +43,8 @@ const string top_bun_name = "top_bun";
 const string bottom_bun_file = "./resources/bottom_bun.urdf";
 const string bottom_bun_name = "bottom_bun";
 
-const string new_object_file = "./resources/GrillCheese.urdf";
-const string new_object_name = "Grill_Cheese";
+const string grill_cheese_file = "./resources/grill_cheese.urdf";
+const string grill_cheese_name = "grill_cheese";
 // redis keys:
 // - write:
 const std::string JOINT_ANGLES_KEY = "sai2::cs225a::project::sensors::q";
@@ -60,14 +60,16 @@ const std::string BURGER_POSITION_KEY = "sai2::cs225a::burger::sensors::r_burger
 // const std::string LETTUCE_POSITION_KEY = "sai2::cs225a::lettuce::sensors::r_lettuce";
 const std::string TOP_BUN_POSITION_KEY = "sai2::cs225a::top_bun::sensors::r_top_bun";
 const std::string BOTTOM_BUN_POSITION_KEY = "sai2::cs225a::bottom_bun::sensors::r_bottom_bun";
+const std::string GRILL_CHEESE_POSITION_KEY = "sai2::cs225a::bottom_bun::sensors::r_grill_cheese";
 
 // - read
 const std::string JOINT_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::fgc";
 const std::string BOTTOM_BUN_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::bottom_bun";
 const std::string BURGER_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::burger";
 const std::string TOP_BUN_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::top_bun";
+const std::string GRILL_CHEESE_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::grill_cheese";
 
-const std::string NEW_OBJECT_KEY = "sai2::cs225a::project::new_object";
+const std::string GRILL_CHEESE_KEY = "sai2::cs225a::project::grill_cheese";
 
 RedisClient redis_client;
 
@@ -160,10 +162,10 @@ int main()
 	bottom_bun->updateModel();
 	bottom_bun->updateKinematics();
 
-	//should we load the new object??
-	auto Grill_Cheese = new Sai2Model::Sai2Model(new_object_file, false);
-	Grill_Cheese->updateModel();
-	Grill_Cheese->updateKinematics();
+	
+	auto grill_cheese = new Sai2Model::Sai2Model(grill_cheese_file, false);
+	grill_cheese->updateModel();
+	grill_cheese->updateKinematics();
 	
 
 	// load simulation world
@@ -182,8 +184,7 @@ int main()
 	// Eigen::Matrix3d ori_spatula;
 	// get position and orientation of burger from sim
 	
-	//make grill cheese object invisible at start up
-	ChangeObject(graphics, sim, new_object_name, false);
+	
 	
 	//set initial position of burger in world
 	
@@ -429,11 +430,14 @@ void simulation(Sai2Model::Sai2Model *robot,
 	VectorXd top_bun_command_torques = VectorXd::Zero(6);
 	redis_client.setEigenMatrixJSON(TOP_BUN_TORQUES_COMMANDED_KEY, top_bun_command_torques);
 
+	VectorXd grill_cheese_command_torques = VectorXd::Zero(6);
+	redis_client.setEigenMatrixJSON(GRILL_CHEESE_TORQUES_COMMANDED_KEY, grill_cheese_command_torques);
+
 	VectorXd command_torques = VectorXd::Zero(dof);
 	redis_client.setEigenMatrixJSON(JOINT_TORQUES_COMMANDED_KEY, command_torques);
 
 	string switch_food_flag = "false";
-	redis_client.set(NEW_OBJECT_KEY, switch_food_flag);
+	redis_client.set(GRILL_CHEESE_KEY, switch_food_flag);
 	// create a timer
 	LoopTimer timer;
 	timer.initializeTimer();
@@ -504,7 +508,7 @@ void simulation(Sai2Model::Sai2Model *robot,
 		// g.setZero();
 		// read arm torques from redis and apply to simulated robot
 		command_torques = redis_client.getEigenMatrixJSON(JOINT_TORQUES_COMMANDED_KEY);
-		switch_food_flag = redis_client.get(NEW_OBJECT_KEY);
+		switch_food_flag = redis_client.get(GRILL_CHEESE_KEY);
 
 		bottom_bun_command_torques = redis_client.getEigenMatrixJSON(BOTTOM_BUN_TORQUES_COMMANDED_KEY);
 		burger_command_torques = redis_client.getEigenMatrixJSON(BURGER_TORQUES_COMMANDED_KEY);
@@ -592,8 +596,11 @@ void simulation(Sai2Model::Sai2Model *robot,
 			ChangeObject(graphics, sim, top_bun_name, false);
 			ChangeObject(graphics, sim, burger_name, false);
 			ChangeObject(graphics, sim, bottom_bun_name, false);
-			ChangeObject(graphics, sim, new_object_name, true);
+			ChangeObject(graphics, sim, grill_cheese_name, true);
 
+		}else{
+			//make grill cheese object invisible at start up
+			ChangeObject(graphics, sim, grill_cheese_name, false);
 		}
 
 		// write new robot state to redis

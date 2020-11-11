@@ -39,7 +39,7 @@
 	</robot>
 
 	<robot name="Grill_Cheese">
-		<model dir="./resources/" path="GrillCheese.urdf" name="Grill_Cheese"/>
+		<model dir="./resources/" path="grill_cheese.urdf" name="grill_cheese"/>
 		<origin xyz="0.12 0.7 0.48" rpy="0 0 0" />
 	</robot>
 

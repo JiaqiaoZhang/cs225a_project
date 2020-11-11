@@ -47,14 +47,17 @@ const std::string JOINT_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuator
 // KEY POSITION FOR BURGER
 const std::string BURGER_POSITION_KEY = "sai2::cs225a::burger::sensors::r_burger";
 const std::string TOP_BREAD_POSITION_KEY = "sai2::cs225a::top_bun::sensors::r_top_bun";
+const std::string GRILL_CHEESE_POSITION_KEY = "sai2::cs225a::bottom_bun::sensors::r_grill_cheese";
+
 // KEY POSITION FOR BUNS
 const std::string BOTTOM_BREAD_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::bottom_bun";
 
 const std::string BOTTOM_BREAD_POSITION_KEY = "sai2::cs225a::bottom_bun::sensors::r_bottom_bun";
 const std::string BURGER_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::burger";
 const std::string TOP_BREAD_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::top_bun";
+const std::string GRILL_CHEESE_TORQUES_COMMANDED_KEY = "sai2::cs225a::project::actuators::grill_cheese";
 
-const std::string NEW_OBJECT_KEY = "sai2::cs225a::project::new_object";
+const std::string GRILL_CHEESE_KEY = "sai2::cs225a::project::grill_cheese";
 
 //robot
 const std::string robot_file = "./resources/mmp_panda.urdf";
@@ -70,8 +73,8 @@ const std::string top_bread_file = "./resources/top_bun.urdf";
 const std::string top_bread_name = "top_bun";
 
 // // Grilled Cheese
-const string new_object_file = "./resources/GrillCheese.urdf";
-const string new_object_name = "Grill_Cheese";
+const string grill_cheese_file = "./resources/grill_cheese.urdf";
+const string grill_cheese_name = "grill_cheese";
 
 unsigned long long controller_counter = 0;
 int main()
@@ -115,8 +118,8 @@ int main()
 	Vector3d r_top_bread = redis_client.getEigenMatrixJSON(TOP_BREAD_POSITION_KEY);
 	VectorXd top_bread_command_torques = VectorXd::Zero(6);
 
-	auto Grill_Cheese = new Sai2Model::Sai2Model(new_object_file, false);
-	Vector3d r_grill_cheese = redis_client.getEigenMatrixJSON(NEW_OBJECT_KEY);
+	auto grill_cheese = new Sai2Model::Sai2Model(grill_cheese_file, false);
+	Vector3d r_grill_cheese = redis_client.getEigenMatrixJSON(GRILL_CHEESE_POSITION_KEY);
 	VectorXd r_grill_cheese_command_torques = VectorXd::Zero(6);
 
 	bottom_bread->updateModel();
@@ -131,7 +134,7 @@ int main()
 	bool top_bread_actuate = false;
 	MatrixXd N_top_bread = MatrixXd::Identity(6, 6);
 
-	Grill_Cheese->updateModel();
+	grill_cheese->updateModel();
 	bool grill_cheese_actuate = false;
 	MatrixXd N_grill_cheese = MatrixXd::Identity(6, 6);
 
@@ -147,7 +150,7 @@ int main()
 	top_bread_task->_kp = 75.0;
 	top_bread_task->_kv = 50.0;
 
-	auto grill_cheese_task = new Sai2Primitives::JointTask(Grill_Cheese);
+	auto grill_cheese_task = new Sai2Primitives::JointTask(grill_cheese);
 	grill_cheese_task->_kp = 80.0;
 	grill_cheese_task->_kv = 50.0;
 
@@ -574,7 +577,7 @@ int main()
 		// command_torques = posori_task_torques + joint_task_torques;
 
 		redis_client.setEigenMatrixJSON(JOINT_TORQUES_COMMANDED_KEY, command_torques);
-		redis_client.set(NEW_OBJECT_KEY, switch_food_flag);
+		redis_client.set(GRILL_CHEESE_KEY, switch_food_flag);
 		controller_counter++;
 	}
 }
