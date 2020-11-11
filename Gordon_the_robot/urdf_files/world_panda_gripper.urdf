@@ -38,11 +38,16 @@
 		<origin xyz="0.5 0.5 0.5" rpy="0 0 0" />
 	</robot>
 
+	<robot name="Grill_Cheese">
+		<model dir="./resources/" path="GrillCheese.urdf" name="Grill_Cheese"/>
+		<origin xyz="0.12 0.7 0.48" rpy="0 0 0" />
+	</robot>
+
 	<robot name="bottom_bun">
 		<model dir="./resources/" path="bottom_bun.urdf" name="bottom_bun"/>
 		<origin xyz="0.7 0.5 0.5" rpy="0 0 0" />
 	</robot>
-
+	
 	<static_object name="Cutting_Board">
 		<origin xyz="0.7 0.5 0.458" rpy="0 0 1.57" />
 

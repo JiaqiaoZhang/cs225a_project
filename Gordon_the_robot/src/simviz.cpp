@@ -43,8 +43,8 @@ const string top_bun_name = "top_bun";
 const string bottom_bun_file = "./resources/bottom_bun.urdf";
 const string bottom_bun_name = "bottom_bun";
 
-const string new_object_file = "";
-
+const string new_object_file = "./resources/GrillCheese.urdf";
+const string new_object_name = "Grill_Cheese";
 // redis keys:
 // - write:
 const std::string JOINT_ANGLES_KEY = "sai2::cs225a::project::sensors::q";
@@ -160,6 +160,12 @@ int main()
 	bottom_bun->updateModel();
 	bottom_bun->updateKinematics();
 
+	//should we load the new object??
+	auto Grill_Cheese = new Sai2Model::Sai2Model(new_object_file, false);
+	Grill_Cheese->updateModel();
+	Grill_Cheese->updateKinematics();
+	
+
 	// load simulation world
 	auto sim = new Simulation::Sai2Simulation(world_file, false);
 	sim->setCollisionRestitution(0);
@@ -175,7 +181,12 @@ int main()
 	// Eigen::Vector3d r_spatula;
 	// Eigen::Matrix3d ori_spatula;
 	// get position and orientation of burger from sim
+	
+	//make grill cheese object invisible at start up
+	ChangeObject(graphics, sim, new_object_name, false);
+	
 	//set initial position of burger in world
+	
 	Eigen::Vector3d r_burger;
 	// Eigen::Matrix3d q_burger;
 	// get position of all other objects in the world
@@ -581,7 +592,7 @@ void simulation(Sai2Model::Sai2Model *robot,
 			ChangeObject(graphics, sim, top_bun_name, false);
 			ChangeObject(graphics, sim, burger_name, false);
 			ChangeObject(graphics, sim, bottom_bun_name, false);
-			//ChangeObject(graphics, sim, new_object_name, true);
+			ChangeObject(graphics, sim, new_object_name, true);
 
 		}
 
