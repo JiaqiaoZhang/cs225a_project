@@ -215,7 +215,9 @@ int main()
 	redis_client.setEigenMatrixJSON(JOINT_VELOCITIES_KEY, robot->_dq);
 	
 	// thread sim_thread(simulation, robot, spatula, burger, tomato, cheese, lettuce, top_bun, bottom_bun, sim, ui_force_widget);
+	//thread sim_thread(simulation, robot, burger, top_bun, bottom_bun, graphics, sim, ui_force_widget);
 	thread sim_thread(simulation, robot, burger, top_bun, bottom_bun,grill_cheese, graphics, sim, ui_force_widget);
+
 	// initialize glew
 	glewInitialize();
 
@@ -418,7 +420,7 @@ void simulation(Sai2Model::Sai2Model *robot,
 
 	Eigen::Vector3d r_grill_cheese = Vector3d::Zero();
 	Eigen::Vector3d grill_cheese_offset;
-	top_bun_offset << 0.12, 0.7, 0.48;
+	grill_cheese_offset << 0.12, 0.7, 0.48;
 	
 	while (fSimulationRunning)
 	{
@@ -487,18 +489,18 @@ void simulation(Sai2Model::Sai2Model *robot,
 		grill_cheese->updateModel();
 		grill_cheese->positionInWorld(r_grill_cheese, "link6");
 		r_grill_cheese += grill_cheese_offset;
-
+		
 		if (switch_food_flag == "true")
 		{
 			ChangeObject(graphics, sim, top_bun_name, false);
 			ChangeObject(graphics, sim, burger_name, false);
 			ChangeObject(graphics, sim, bottom_bun_name, false);
 			ChangeObject(graphics, sim, grill_cheese_name, true);
-
+		
 		}else{
 			//make grill cheese object invisible at start up
 			ChangeObject(graphics, sim, grill_cheese_name, false);
-		}
+		} 
 
 		// write new robot state to redis
 		redis_client.setEigenMatrixJSON(JOINT_ANGLES_KEY, robot->_q);
