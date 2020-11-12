@@ -292,6 +292,14 @@ int main()
 	VectorXd q_curr_desired = VectorXd::Zero(10); // container  7 for joints, 3 for mobile base
 	q_curr_desired = robot->_q;
 
+	Matrix3d flip_ori;
+	Matrix3d desired_ori;
+	Vector3d flip_vel;
+	double flip_angle = (120.0)* M_PI / 180.0;
+	flip_ori << 	cos(flip_angle), 		0.0000000,		-sin(flip_angle),
+				   	0.0000000, 		1.0000000, 		0.0000000,
+				   	sin(flip_angle), 		0.0000000, 		cos(flip_angle);
+
 	//Vector3d stack_foods[] = {r_bottom_bread, r_burger, r_top_bread};
 	std::vector<Vector3d> stack_foods = {Vector3d(0.5, 0.5, 0.5), Vector3d(0.9, 0.5, 0.5), Vector3d(0.7, 0.5, 0.5)};
 
@@ -363,7 +371,7 @@ int main()
 		break;
 		case FLIPPING:
 		{
-			std::vector<int> tasks = {RESET_TASK, ALIGN2, SLIDE, LIFT_SPATULA, FLIP_FOOD};
+			std::vector<int> tasks = {RESET_TASK, ALIGN2, SLIDE, LIFT_SPATULA, FLIP_FOOD, RESET_TASK};
 			stack_foods = {Vector3d(0.12, 0.65, 0.55)};
 
 			// robot_offset = {Vector3d(0, 0.15, 0.37114)};
@@ -697,6 +705,39 @@ int main()
 			posori_task->computeTorques(posori_task_torques);
 			// joint_task->computeTorques(joint_task_torques);
 		}
+		break;
+		case FLIP_FOOD:
+			{
+			if(!taskInitialized){
+				posori_task->_otg->setMaxAngularVelocity(15);
+				posori_task->_otg->setMaxLinearVelocity(1);
+				posori_task->reInitializeTask();
+				joint_task->reInitializeTask();
+				posori_task->_desired_position(0) = 0.25;
+				desired_ori = flip_ori * lift_ori;
+				posori_task->_desired_orientation = desired_ori;
+				posori_task->_desired_position(2) = z_lift;
+				taskInitialized = true;
+				cout << "flip started" <<endl;
+			}
+			N_prec.setIdentity();
+			posori_task->updateTaskModel(N_prec);
+			N_prec = posori_task->_N;
+			joint_task->updateTaskModel(N_prec);
+
+			//if ((robot->_q - q_curr_desired).norm() < 0.05)
+			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
+			{
+				cout << "flipping Finished" << endl;
+				taskFinished = true;
+				taskInitialized = false;
+				// state = -1;
+				continue;
+			}
+			posori_task->computeTorques(posori_task_torques);
+			joint_task->computeTorques(joint_task_torques);
+		}
+			break;
 		case SERVING:
 			break;
 		default:
