@@ -258,7 +258,7 @@ int main()
 	//drop_food << 0.12, 0.65, 0.1;//
 	
 	Vector3d drop_food_dish;
-	drop_food_dish << -0.45, 0.5, 0.458;
+	drop_food_dish << -0.45, 0.36, 0.458;
 
 	Vector3d des_vel;
 	des_vel << 0.2, 0.2, 0.2;
@@ -414,7 +414,7 @@ int main()
 		case SERVING:
 		{
 			
-			std::vector<int> tasks = {RESET_TASK, ALIGN2, SLIDE, LIFT_SPATULA,MOVE_TO_DISH, DROP_FOOD};
+			std::vector<int> tasks = {RESET_TASK, ALIGN2, SLIDE, LIFT_SPATULA,MOVE_TO_DISH, DROP_FOOD, RESET_TASK};
 			
 			if (taskFinished)
 			{
@@ -427,7 +427,6 @@ int main()
 			{
 				state = -1; //default;
 				cout << "Finish" << endl;
-				runloop = false;
 				taskIndex = 0;
 				continue;
 			}
@@ -448,7 +447,31 @@ int main()
 		{
 		case IDLE:
 		{
-			q_curr_desired = robot->_q;
+			if (!taskInitialized)
+			{
+				cout << "Stay Idle" << endl;
+				posori_task->reInitializeTask();
+				N_prec.setIdentity();
+				posori_task->updateTaskModel(N_prec);
+				N_prec = posori_task->_N;
+				joint_task->updateTaskModel(N_prec);
+				q_curr_desired= robot->_q;
+				joint_task->_desired_position = q_curr_desired; //move the base further from table
+				taskInitialized = true;
+			}
+			// if ((q_curr_desired - robot->_q).norm() < 0.05)
+			// {
+			// 	// taskFinished = true;
+			// 	// taskInitialized = false;
+			// 	continue;
+			// }
+
+			N_prec.setIdentity();
+			posori_task->updateTaskModel(N_prec);
+			N_prec = posori_task->_N;
+			joint_task->updateTaskModel(N_prec);
+			posori_task->computeTorques(posori_task_torques);
+			joint_task->computeTorques(joint_task_torques);
 		}
 		break;
 		case RESET_TASK:
@@ -567,7 +590,7 @@ int main()
 				taskInitialized = true;
 			}
 
-			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
+			if (posori_task->goalPositionReached(0.02) && posori_task->goalOrientationReached(0.05))
 			{
 				cout << "SLIDE Finished" << endl;
 				taskFinished = true;
@@ -758,6 +781,10 @@ int main()
 			//if ((robot->_q - q_curr_desired).norm() < 0.05)
 			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
 			{
+				posori_task->_otg->setMaxAngularAcceleration(1);
+				posori_task->_otg->setMaxAngularVelocity(1);
+				posori_task->_otg->setMaxLinearAcceleration(1);
+				posori_task->_otg->setMaxLinearVelocity(1);
 				cout << "flipping Finished" << endl;
 				taskFinished = true;
 				taskInitialized = false;
@@ -780,10 +807,10 @@ int main()
 				cout << "move to grill started" << endl;
 				joint_task->reInitializeTask();
 				posori_task->reInitializeTask();
-				N_prec.setIdentity();
-				posori_task->updateTaskModel(N_prec);
-				N_prec = posori_task->_N;
-				joint_task->updateTaskModel(N_prec);
+				// N_prec.setIdentity();
+				// posori_task->updateTaskModel(N_prec);
+				// N_prec = posori_task->_N;
+				// joint_task->updateTaskModel(N_prec);
 				q_curr_desired(0) = -0.4;
 				q_curr_desired(1) = 0.1;
 				posori_task->_desired_position = drop_food_dish;
