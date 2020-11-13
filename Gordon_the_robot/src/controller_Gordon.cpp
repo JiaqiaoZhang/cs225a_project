@@ -28,6 +28,7 @@ void sighandler(int sig)
 #define MOVE_TO_GRILL 13
 #define MOVE_TO_CORNER 14
 #define ALIGN2 15
+#define MOVE_TO_DISH 16
 // states
 #define STACKING 7
 #define FLIPPING 8
@@ -255,6 +256,9 @@ int main()
 	Vector3d drop_food;
 	drop_food << 0.12, 0.68, 0.22;
 	//drop_food << 0.12, 0.65, 0.1;//
+	
+	Vector3d drop_food_dish;
+	drop_food_dish << -0.45, 0.5, 0.458;
 
 	Vector3d des_vel;
 	des_vel << 0.2, 0.2, 0.2;
@@ -372,31 +376,12 @@ int main()
 		break;
 		case FLIPPING:
 		{
-			std::vector<int> tasks = {RESET_TASK, ALIGN2, SLIDE, LIFT_SPATULA, FLIP_FOOD, RESET_TASK};
+			std::vector<int> tasks = {RESET_TASK, ALIGN2, SLIDE, LIFT_SPATULA, FLIP_FOOD};
 			stack_foods = {Vector3d(0.12, 0.65, 0.55)};
 
 			// robot_offset = {Vector3d(0, 0.15, 0.37114)};
 			robot_offset = {Vector3d(0, 0.15, 0.4)}; // 0.55 - X = 1/2 thickness
-			// task = tasks[taskIndex];
 
-			// if (taskFinished)
-			// {
-			// 	if (taskIndex == 0)
-			// 	{
-			// 		// send flag to simviz
-			// 		switch_food_flag = "true";
-			// 	}
-
-			// 	taskIndex++;
-			// 	taskFinished = false;
-			// 	cout << "switch to task number " << taskIndex << endl;
-			// }
-			// if (taskIndex == tasks.size())
-			// {
-			// 	state = SERVING;
-			// 	cout << "switch to SERVING state" << endl;
-			// 	taskIndex = 0;
-			// }
 			y_slide = 0.7;
 			if (taskIndex == 0)
 			{
@@ -423,38 +408,33 @@ int main()
 				}
 				cout << "switch to task number " << taskIndex << endl;
 			}
-			// if (taskIndex == tasks.size() && stack_idx < 2)
-			// {
-			// 	state = SERVING;
-			// 	cout << "switch to Serving state" << endl;
-			// 	taskIndex = 0;
-			// 	stack_idx = 0;
-			// 	continue;
-			// }
-
 			task = tasks[taskIndex];
 		}
 		break;
 		case SERVING:
 		{
-			std::vector<int> tasks = {RESET_TASK, ALIGN2, SLIDE, LIFT_SPATULA, DROP_FOOD};
-			task = tasks[taskIndex];
+			
+			std::vector<int> tasks = {RESET_TASK, ALIGN2, SLIDE, LIFT_SPATULA,MOVE_TO_DISH, DROP_FOOD};
+			
 			if (taskFinished)
 			{
+				cout << "taskIndex: "<< taskIndex << endl;
 				taskIndex++;
 				taskFinished = false;
 				cout << "switch to task number " << taskIndex << endl;
 			}
 			if (taskIndex == tasks.size())
 			{
-				// state = default;
+				state = -1; //default;
 				cout << "Finish" << endl;
 				runloop = false;
 				taskIndex = 0;
+				continue;
 			}
+			task = tasks[taskIndex];
 			r_grill_cheese = redis_client.getEigenMatrixJSON(GRILL_CHEESE_POSITION_KEY);
 			stack_foods.at(0) = r_grill_cheese;
-			robot_offset[0].setZero();
+			//robot_offset[0].setZero();
 		}
 		break;
 		default:
@@ -793,7 +773,41 @@ int main()
 			joint_task->computeTorques(joint_task_torques);
 		}
 			break;
-		case SERVING:
+		case MOVE_TO_DISH:
+			// set velocity to zero
+			if (!taskInitialized)
+			{
+				cout << "move to grill started" << endl;
+				joint_task->reInitializeTask();
+				posori_task->reInitializeTask();
+				N_prec.setIdentity();
+				posori_task->updateTaskModel(N_prec);
+				N_prec = posori_task->_N;
+				joint_task->updateTaskModel(N_prec);
+				q_curr_desired(0) = -0.4;
+				q_curr_desired(1) = 0.1;
+				posori_task->_desired_position = drop_food_dish;
+				posori_task->_desired_orientation = lift_ori;
+				joint_task->_desired_position = q_curr_desired;
+				taskInitialized = true;
+			}
+
+			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
+			{
+				cout << "Move to Grill finished" << endl;
+				taskFinished = true;
+				taskInitialized = false;
+				// state = -1;
+				continue;
+			}
+
+			N_prec.setIdentity();
+			posori_task->updateTaskModel(N_prec);
+			N_prec = posori_task->_N;
+			joint_task->updateTaskModel(N_prec);
+			posori_task->computeTorques(posori_task_torques);
+			joint_task->computeTorques(joint_task_torques);
+			// compute torques
 			break;
 		default:
 			// task = IDLE;
