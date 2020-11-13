@@ -80,7 +80,7 @@ unsigned long long controller_counter = 0;
 int main()
 {
 	int task = RESET_TASK; //ALIGN;
-	int state = FLIPPING;
+	int state = STACKING;
 	int base = STACK_BASE;
 	int stack_idx = 0; //2;
 	int flipping_idx = 0;
@@ -180,31 +180,33 @@ int main()
 	const string control_link = "link7";
 	const Vector3d control_point = Vector3d(0, -0.203, 0.21764); // 0 0.203 0.21764
 	auto posori_task = new Sai2Primitives::PosOriTask(robot, control_link, control_point);
-
-#ifdef USING_OTG
 	posori_task->_use_interpolation_flag = true;
-#else
-	posori_task->_use_velocity_saturation_flag = true;
-#endif
+
+	// #ifdef USING_OTG
+	// 	posori_task->_use_interpolation_flag = true;
+	// #else
+	// 	posori_task->_use_velocity_saturation_flag = true;
+	// #endif
 
 	VectorXd posori_task_torques = VectorXd::Zero(dof);
-	posori_task->_kp_pos = 200.0;
+	posori_task->_kp_pos = 100.0;
 	posori_task->_kv_pos = 20.0;
-	posori_task->_kp_ori = 200.0;
+	posori_task->_kp_ori = 100.0;
 	posori_task->_kv_ori = 20.0;
 
 	// joint task
 	auto joint_task = new Sai2Primitives::JointTask(robot);
-
-#ifdef USING_OTG
 	joint_task->_use_interpolation_flag = true;
-#else
-	joint_task->_use_velocity_saturation_flag = true;
-#endif
+
+	// #ifdef USING_OTG
+	// 	joint_task->_use_interpolation_flag = true;
+	// #else
+	// 	joint_task->_use_velocity_saturation_flag = true;
+	// #endif
 
 	VectorXd joint_task_torques = VectorXd::Zero(dof);
-	joint_task->_kp = 200.0;
-	joint_task->_kv = 40.0;
+	joint_task->_kp = 100.0;
+	joint_task->_kv = 20.0;
 
 	VectorXd q_init_desired = initial_q;
 	joint_task->_desired_position = q_init_desired;
@@ -212,8 +214,8 @@ int main()
 	// create a timer
 	LoopTimer timer;
 	timer.initializeTimer();
-	// timer.setLoopFrequency(1000);
-	timer.setLoopFrequency(200);
+	timer.setLoopFrequency(1000);
+	// timer.setLoopFrequency(200);
 	double start_time = timer.elapsedTime(); //secs
 	bool fTimerDidSleep = true;
 
@@ -280,8 +282,8 @@ int main()
 	bool taskFinished = false;
 	int taskIndex = 0; //7;
 
-	posori_task->_use_interpolation_flag = true;
-	posori_task->_use_velocity_saturation_flag = false;
+	// posori_task->_use_interpolation_flag = true;
+	// posori_task->_use_velocity_saturation_flag = false;
 
 	Vector3d init_spatula_pos;
 	robot->positionInWorld(init_spatula_pos, control_link, control_point);
@@ -302,7 +304,6 @@ int main()
 
 	//Vector3d stack_foods[] = {r_bottom_bread, r_burger, r_top_bread};
 	std::vector<Vector3d> stack_foods = {Vector3d(0.5, 0.5, 0.5), Vector3d(0.9, 0.5, 0.5), Vector3d(0.7, 0.5, 0.5)};
-
 	std::vector<Vector3d> robot_offset = {Vector3d(0, 0.15, 0.37114), Vector3d(0, 0.15, 0.37114), Vector3d(0, 0.15, 0.37114)};
 
 	while (runloop)
@@ -407,29 +408,36 @@ int main()
 				taskIndex++;
 				taskFinished = false;
 
-				if (taskIndex == tasks.size() && stack_idx < 2)
+				// if (taskIndex == tasks.size() && stack_idx < 2)
+				if (taskIndex == tasks.size())
 				{
-					stack_idx++;
-					taskIndex = 0;
+					// stack_idx++;
+					// taskIndex = 0;
 					cout << "pick up sandwitch" << endl;
+
+					state = SERVING;
+					cout << "switch to Serving state" << endl;
+					taskIndex = 0;
+					stack_idx = 0;
+					continue;
 				}
 				cout << "switch to task number " << taskIndex << endl;
 			}
-			if (taskIndex == tasks.size() && stack_idx == 2)
-			{
-				state = SERVING;
-				cout << "switch to Serving state" << endl;
-				taskIndex = 0;
-				stack_idx = 0;
-				continue;
-			}
+			// if (taskIndex == tasks.size() && stack_idx < 2)
+			// {
+			// 	state = SERVING;
+			// 	cout << "switch to Serving state" << endl;
+			// 	taskIndex = 0;
+			// 	stack_idx = 0;
+			// 	continue;
+			// }
 
 			task = tasks[taskIndex];
 		}
 		break;
 		case SERVING:
 		{
-			std::vector<int> tasks = {ALIGN, SLIDE, LIFT_SPATULA, DROP_FOOD};
+			std::vector<int> tasks = {RESET_TASK, ALIGN2, SLIDE, LIFT_SPATULA, DROP_FOOD};
 			task = tasks[taskIndex];
 			if (taskFinished)
 			{
@@ -444,6 +452,9 @@ int main()
 				runloop = false;
 				taskIndex = 0;
 			}
+			r_grill_cheese = redis_client.getEigenMatrixJSON(GRILL_CHEESE_POSITION_KEY);
+			stack_foods.at(0) = r_grill_cheese;
+			robot_offset[0].setZero();
 		}
 		break;
 		default:
@@ -483,6 +494,11 @@ int main()
 				taskInitialized = false;
 				continue;
 			}
+
+			N_prec.setIdentity();
+			posori_task->updateTaskModel(N_prec);
+			N_prec = posori_task->_N;
+			joint_task->updateTaskModel(N_prec);
 			posori_task->computeTorques(posori_task_torques);
 			joint_task->computeTorques(joint_task_torques);
 		}
@@ -504,6 +520,7 @@ int main()
 				joint_task->_desired_position = q_curr_desired;
 				// posori_task->_desired_orientation = good_ee_rot;
 				taskInitialized = true;
+				posori_task_torques.setZero();
 				cout << "move to board started" << endl;
 			}
 
@@ -512,6 +529,7 @@ int main()
 				cout << "Move to Board Finished" << endl;
 				taskFinished = true;
 				taskInitialized = false;
+				joint_task->_use_velocity_saturation_flag = false;
 				continue;
 			}
 
@@ -544,6 +562,11 @@ int main()
 				taskInitialized = false;
 				continue;
 			}
+
+			N_prec.setIdentity();
+			posori_task->updateTaskModel(N_prec);
+			N_prec = posori_task->_N;
+			joint_task->updateTaskModel(N_prec);
 			posori_task->computeTorques(posori_task_torques);
 			joint_task->computeTorques(joint_task_torques);
 		}
@@ -571,6 +594,11 @@ int main()
 				taskInitialized = false;
 				continue;
 			}
+
+			N_prec.setIdentity();
+			posori_task->updateTaskModel(N_prec);
+			N_prec = posori_task->_N;
+			joint_task->updateTaskModel(N_prec);
 			posori_task->computeTorques(posori_task_torques);
 			joint_task->computeTorques(joint_task_torques);
 		}
@@ -599,6 +627,11 @@ int main()
 				// state = -1;
 				continue;
 			}
+
+			N_prec.setIdentity();
+			posori_task->updateTaskModel(N_prec);
+			N_prec = posori_task->_N;
+			joint_task->updateTaskModel(N_prec);
 			posori_task->computeTorques(posori_task_torques);
 			joint_task->computeTorques(joint_task_torques);
 			break;
@@ -618,8 +651,8 @@ int main()
 				posori_task->_desired_position = drop_food;
 				posori_task->_desired_orientation = lift_ori;
 				// q_curr_desired(9) = -M_PI;/
-				joint_task->_use_velocity_saturation_flag = true;
-				joint_task->_saturation_velocity(0) = 0.2;
+				// joint_task->_use_velocity_saturation_flag = true;
+				// joint_task->_saturation_velocity(0) = 0.2;
 				joint_task->_desired_position = q_curr_desired;
 				taskInitialized = true;
 			}
@@ -632,6 +665,11 @@ int main()
 				// state = -1;
 				continue;
 			}
+
+			N_prec.setIdentity();
+			posori_task->updateTaskModel(N_prec);
+			N_prec = posori_task->_N;
+			joint_task->updateTaskModel(N_prec);
 			posori_task->computeTorques(posori_task_torques);
 			joint_task->computeTorques(joint_task_torques);
 			// compute torques
@@ -666,6 +704,11 @@ int main()
 				//state = -1;
 				continue;
 			}
+
+			N_prec.setIdentity();
+			posori_task->updateTaskModel(N_prec);
+			N_prec = posori_task->_N;
+			joint_task->updateTaskModel(N_prec);
 			posori_task->computeTorques(posori_task_torques);
 			joint_task->computeTorques(joint_task_torques);
 			break;
@@ -697,33 +740,40 @@ int main()
 
 			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
 			{
-				cout << "ALIGN TO SANDWITCH Finished" << endl;
+				cout << "ALIGN TO BIG SANDWICH Finished" << endl;
 				taskFinished = true;
 				taskInitialized = false;
 				continue;
 			}
-			posori_task->computeTorques(posori_task_torques);
-			// joint_task->computeTorques(joint_task_torques);
-		}
-		break;
-		case FLIP_FOOD:
-			{
-			if(!taskInitialized){
-				posori_task->_otg->setMaxAngularVelocity(15);
-				posori_task->_otg->setMaxLinearVelocity(1);
-				posori_task->reInitializeTask();
-				joint_task->reInitializeTask();
-				posori_task->_desired_position(0) = 0.25;
-				desired_ori = flip_ori * lift_ori;
-				posori_task->_desired_orientation = desired_ori;
-				posori_task->_desired_position(2) = z_lift;
-				taskInitialized = true;
-				cout << "flip started" <<endl;
-			}
+
 			N_prec.setIdentity();
 			posori_task->updateTaskModel(N_prec);
 			N_prec = posori_task->_N;
 			joint_task->updateTaskModel(N_prec);
+			posori_task->computeTorques(posori_task_torques);
+			joint_task->computeTorques(joint_task_torques);
+		}
+		break;
+		case FLIP_FOOD:
+			{
+			if(!taskInitialized) {
+				posori_task->reInitializeTask();
+				joint_task->reInitializeTask();
+				joint_task->_desired_position(0) -= 0.1; 
+				posori_task->_kp_ori = 400;
+				posori_task->_kv_ori = 40; 
+				posori_task->_otg->setMaxAngularAcceleration(15);
+				posori_task->_otg->setMaxAngularVelocity(15);
+				posori_task->_otg->setMaxLinearAcceleration(15);
+				posori_task->_otg->setMaxLinearVelocity(15);
+				posori_task->_desired_position(0) = 0.25;
+				desired_ori = flip_ori * lift_ori;
+				posori_task->_desired_orientation = desired_ori;
+				posori_task->_desired_position(0) -= 0.1;
+				posori_task->_desired_position(2) = z_lift + 0.1;
+				taskInitialized = true;
+				cout << "flip started" <<endl;
+			}
 
 			//if ((robot->_q - q_curr_desired).norm() < 0.05)
 			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
@@ -734,6 +784,11 @@ int main()
 				// state = -1;
 				continue;
 			}
+
+			N_prec.setIdentity();
+			posori_task->updateTaskModel(N_prec);
+			N_prec = posori_task->_N;
+			joint_task->updateTaskModel(N_prec);
 			posori_task->computeTorques(posori_task_torques);
 			joint_task->computeTorques(joint_task_torques);
 		}
@@ -749,7 +804,8 @@ int main()
 		// cout << command_torques(0) << endl;
 		// command_torques = posori_task_torques + joint_task_torques;
 
-		redis_client.setEigenMatrixJSON(JOINT_TORQUES_COMMANDED_KEY, command_torques);
+		if (controller_counter % 10 == 0)
+			redis_client.setEigenMatrixJSON(JOINT_TORQUES_COMMANDED_KEY, command_torques);
 		redis_client.set(SWITCH_OBJECT_KEY, switch_food_flag);
 		controller_counter++;
 	}
