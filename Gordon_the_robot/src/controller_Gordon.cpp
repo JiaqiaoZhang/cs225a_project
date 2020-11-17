@@ -29,6 +29,7 @@ void sighandler(int sig)
 #define MOVE_TO_CORNER 14
 #define ALIGN2 15
 #define MOVE_TO_DISH 16
+#define DROP_FOOD2 17
 // states
 #define STACKING 7
 #define FLIPPING 8
@@ -258,7 +259,7 @@ int main()
 	//drop_food << 0.12, 0.65, 0.1;//
 	
 	Vector3d drop_food_dish;
-	drop_food_dish << -0.45, 0.36, 0.458;
+	drop_food_dish << -0.45, 0.56, 0.358;
 
 	Vector3d des_vel;
 	des_vel << 0.2, 0.2, 0.2;
@@ -272,6 +273,13 @@ int main()
 	relax_ori << 1.0000000, 0.0000000, 0.0000000,
 			0.0000000, cos(relax_angle), -sin(relax_angle),
 			0.0000000, sin(relax_angle), cos(relax_angle);
+
+	Matrix3d drop_food_ori;
+	double drop_food_angle = (180 - 45) * M_PI / 180.0;
+	// relax_ori = lift_ori.transpose();
+	drop_food_ori << 1.0000000, 0.0000000, 0.0000000,
+			0.0000000, cos(drop_food_angle), -sin(drop_food_angle),
+			0.0000000, sin(drop_food_angle), cos(drop_food_angle);
 	// relax_ori *= good_ee_rot;
 
 	Matrix3d flex_ori;
@@ -414,7 +422,7 @@ int main()
 		case SERVING:
 		{
 			
-			std::vector<int> tasks = {RESET_TASK, ALIGN2, SLIDE, LIFT_SPATULA,MOVE_TO_DISH, DROP_FOOD, RESET_TASK};
+			std::vector<int> tasks = {RESET_TASK, ALIGN2, SLIDE, LIFT_SPATULA,MOVE_TO_DISH, DROP_FOOD2, RESET_TASK};
 			
 			if (taskFinished)
 			{
@@ -702,6 +710,43 @@ int main()
 			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
 			{
 				cout << "Drop Food Finished" << endl;
+				taskFinished = true;
+				taskInitialized = false;
+				//state = -1;
+				continue;
+			}
+
+			N_prec.setIdentity();
+			posori_task->updateTaskModel(N_prec);
+			N_prec = posori_task->_N;
+			joint_task->updateTaskModel(N_prec);
+			posori_task->computeTorques(posori_task_torques);
+			joint_task->computeTorques(joint_task_torques);
+			break;
+		case DROP_FOOD2:
+			if (!taskInitialized)
+			{
+				cout << "drop food start" << endl;
+				// drop the food to the grill
+				posori_task->reInitializeTask();
+				// posori_task->_desired_position(1) = y_slide + 0.1;
+				posori_task->_desired_position(2) = z_lift - 0.25;
+				//posori_task->_desired_position = drop_food;
+				posori_task->_desired_orientation = drop_food_ori;
+				//posori_task->_desired_position = reset_pos;
+				N_prec.setIdentity();
+				posori_task->updateTaskModel(N_prec);
+				N_prec = posori_task->_N;
+
+				joint_task->updateTaskModel(N_prec);
+				taskInitialized = true;
+			}
+
+			//cout << "spatula position" << init_spatula_pos << endl;
+
+			if (posori_task->goalPositionReached(0.01) && posori_task->goalOrientationReached(0.05))
+			{
+				cout << "Drop Food To Dish Finished" << endl;
 				taskFinished = true;
 				taskInitialized = false;
 				//state = -1;

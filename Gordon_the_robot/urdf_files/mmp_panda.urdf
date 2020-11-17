@@ -187,8 +187,9 @@
         <mesh filename="../../../Gordon_the_robot/model/kitchen_objects/meshes/visual/Spatula.obj"/>
       </geometry>
     </visual>
-    <visual>
-      <!-- 0.107 + 0.11064 = 0.21764 -->
+    
+    <!-- <visual>
+      
       <origin xyz="0 -0.203 0.21764" rpy="0 0 0" />
       <geometry>
         <sphere radius = "0.01"/>  
@@ -196,7 +197,8 @@
       <material name="red">
       <color rgba="1 0 0 1"/>
       </material> 
-    </visual>
+    </visual> -->
+    
      <collision>
       <origin xyz="0 0 0.107" rpy="0 0 3.14"/>
       <geometry>
